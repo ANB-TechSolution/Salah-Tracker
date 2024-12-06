@@ -10,6 +10,10 @@ import 'package:salahtracker/screens/QuranScreen.dart';
 import 'package:salahtracker/screens/SettingsScreen.dart';
 import 'package:salahtracker/screens/SixKalmaScreen.dart';
 import 'package:salahtracker/screens/TasbeehCounterScreen.dart';
+import 'package:salahtracker/utils/constants/colors.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'utils/theme/theme.dart';
 
 void main() {
   runApp(MyApp());
@@ -22,6 +26,30 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool isDarkTheme = false;
+  ThemeMode _themeMode = ThemeMode.system;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThemeMode();
+  }
+
+  Future<void> _loadThemeMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      int themeModeIndex = prefs.getInt('themeMode') ?? 0;
+      _themeMode = ThemeMode.values[themeModeIndex];
+    });
+  }
+
+  Future<void> _toggleTheme(ThemeMode themeMode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('themeMode', themeMode.index);
+
+    setState(() {
+      _themeMode = themeMode;
+    });
+  }
 
   void toggleTheme() {
     setState(() {
@@ -33,22 +61,22 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: isDarkTheme ? Brightness.dark : Brightness.light,
-        primarySwatch: Colors.teal,
-      ),
+      themeMode: _themeMode,
+      theme: TAppTheme.lightTheme,
+      darkTheme: TAppTheme.darkTheme,
       home: SalahTrackerScreen(
-          toggleTheme: toggleTheme, isDarkTheme: isDarkTheme),
+          toggleTheme: (ThemeMode themeMode) => _toggleTheme(themeMode),
+          currentThemeMode: _themeMode),
     );
   }
 }
 
 class SalahTrackerScreen extends StatefulWidget {
-  final Function toggleTheme;
-  final bool isDarkTheme;
+  final void Function(ThemeMode) toggleTheme;
+  final ThemeMode currentThemeMode;
 
   const SalahTrackerScreen(
-      {required this.toggleTheme, required this.isDarkTheme});
+      {required this.toggleTheme, required this.currentThemeMode});
 
   @override
   _SalahTrackerScreenState createState() => _SalahTrackerScreenState();
@@ -209,13 +237,29 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
                 ),
               ),
               ListTile(
-                leading: Icon(Icons.home),
-                title: Text('Home'),
+                leading: const Icon(
+                  Icons.home,
+                  color: TColors.black,
+                ),
+                title: Text(
+                  'Home',
+                  style: TextStyle(
+                    color: TColors.black,
+                  ),
+                ),
                 onTap: () {},
               ),
               ListTile(
-                leading: Icon(Icons.settings),
-                title: Text('Settings'),
+                leading: Icon(
+                  Icons.settings,
+                  color: TColors.black,
+                ),
+                title: Text(
+                  'Settings',
+                  style: TextStyle(
+                    color: TColors.black,
+                  ),
+                ),
                 onTap: () {},
               ),
             ],
@@ -245,7 +289,7 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
                       MaterialPageRoute(
                         builder: (context) => SettingsScreen(
                           toggleTheme: widget.toggleTheme,
-                          isDarkTheme: widget.isDarkTheme,
+                          currentThemeMode: widget.currentThemeMode,
                         ),
                       ),
                     );
