@@ -15,7 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'utils/theme/theme.dart';
 
-//now
+
 void main() {
   runApp(MyApp());
 }
