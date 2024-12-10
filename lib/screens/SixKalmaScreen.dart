@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:salahtracker/utils/helper_function.dart';
 import 'package:share_plus/share_plus.dart';
 
 class SixKalmaScreen extends StatelessWidget {
@@ -84,7 +85,7 @@ class SixKalmaScreen extends StatelessWidget {
                   // Name Section
                   Text(
                     kalma['name']!,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.teal,
@@ -98,7 +99,9 @@ class SixKalmaScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                      color: HelperFunction.isDarkMode(context)
+                          ? Colors.white
+                          : Colors.black87,
                     ),
                   ),
                   SizedBox(height: 10),
@@ -118,7 +121,9 @@ class SixKalmaScreen extends StatelessWidget {
                     kalma['english']!,
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.black87,
+                      color: HelperFunction.isDarkMode(context)
+                          ? Colors.white
+                          : Colors.black87,
                     ),
                   ),
                   SizedBox(height: 10),
@@ -136,7 +141,9 @@ class SixKalmaScreen extends StatelessWidget {
                     kalma['urdu']!,
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.black87,
+                      color: HelperFunction.isDarkMode(context)
+                          ? Colors.white
+                          : Colors.black87,
                     ),
                   ),
                   SizedBox(height: 20),

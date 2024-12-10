@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 
+import '../utils/helper_function.dart';
+
 class TasbeehCounterScreen extends StatefulWidget {
   @override
   _TasbeehCounterScreenState createState() => _TasbeehCounterScreenState();
@@ -88,7 +90,12 @@ class _TasbeehCounterScreenState extends State<TasbeehCounterScreen> {
                     if (!_isTapped)
                       Text(
                         'Tap the screen to start counting',
-                        style: TextStyle(fontSize: 18, color: Colors.black),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: HelperFunction.isDarkMode(context)
+                              ? Colors.white
+                              : Colors.black87,
+                        ),
                       ),
                     SizedBox(height: 20),
                     Text(
