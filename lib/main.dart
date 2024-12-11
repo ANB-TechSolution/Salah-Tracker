@@ -14,6 +14,7 @@ import 'package:salahtracker/utils/constants/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'utils/theme/theme.dart';
+//
 
 void main() {
   runApp(MyApp());
