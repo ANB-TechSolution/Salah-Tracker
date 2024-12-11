@@ -156,7 +156,7 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(200.0),
+        preferredSize: const Size.fromHeight(200.0),
         child: AppBar(
           foregroundColor: Colors.white,
           backgroundColor: Colors.teal,
@@ -173,13 +173,13 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
                     ),
                     Text(
                       'Salah Tracker',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 22,
                       ),
                     ),
-                    SizedBox(height: 8),
-                    Text(
+                    const SizedBox(height: 8),
+                    const Text(
                       'بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ',
                       style: TextStyle(
                         fontSize: 22,
@@ -201,13 +201,13 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
                   children: [
                     Text(
                       currentDate,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
                       ),
                     ),
                     Text(
                       location,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
                         color: Colors.white70,
                       ),
@@ -225,7 +225,7 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
           child: ListView(
             padding: EdgeInsets.zero,
             children: <Widget>[
-              DrawerHeader(
+              const DrawerHeader(
                 decoration: BoxDecoration(
                   color: Colors.teal,
                 ),
@@ -242,7 +242,7 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
                   Icons.home,
                   color: TColors.black,
                 ),
-                title: Text(
+                title: const Text(
                   'Home',
                   style: TextStyle(
                     color: TColors.black,
@@ -251,11 +251,11 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
                 onTap: () {},
               ),
               ListTile(
-                leading: Icon(
+                leading: const Icon(
                   Icons.settings,
                   color: TColors.black,
                 ),
-                title: Text(
+                title: const Text(
                   'Settings',
                   style: TextStyle(
                     color: TColors.black,
@@ -271,7 +271,7 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
         padding: const EdgeInsets.all(16.0),
         child: GridView.builder(
           itemCount: cardsData.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             crossAxisSpacing: 16.0,
             mainAxisSpacing: 16.0,
@@ -356,10 +356,10 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
                       size: 40,
                       color: Colors.teal,
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       cardsData[index]['name'],
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),

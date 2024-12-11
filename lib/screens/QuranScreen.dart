@@ -11,7 +11,8 @@ class QuranScreen extends StatefulWidget {
 class _QuranScreenState extends State<QuranScreen> {
   List<dynamic> surahs = [];
   List<dynamic> translations = [];
-  String selectedTranslation = '131'; // Default translation ID for Saheeh International (English)
+  String selectedTranslation =
+      '131'; // Default translation ID for Saheeh International (English)
   bool isLoading = true;
   bool hasError = false;
   String errorMessage = "";
@@ -27,7 +28,8 @@ class _QuranScreenState extends State<QuranScreen> {
 
   // Fetch available translations
   Future<void> fetchTranslations() async {
-    final url = Uri.parse("https://api.quran.com/api/v4/resources/translations");
+    final url =
+        Uri.parse("https://api.quran.com/api/v4/resources/translations");
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -36,7 +38,8 @@ class _QuranScreenState extends State<QuranScreen> {
           translations = data['translations'];
         });
       } else {
-        throw Exception("Failed to load translations. Status code: ${response.statusCode}");
+        throw Exception(
+            "Failed to load translations. Status code: ${response.statusCode}");
       }
     } catch (e) {
       setState(() {
@@ -58,7 +61,8 @@ class _QuranScreenState extends State<QuranScreen> {
           isLoading = false;
         });
       } else {
-        throw Exception("Failed to load Surahs. Status code: ${response.statusCode}");
+        throw Exception(
+            "Failed to load Surahs. Status code: ${response.statusCode}");
       }
     } catch (e) {
       setState(() {
@@ -133,12 +137,13 @@ class _QuranScreenState extends State<QuranScreen> {
                           labelText: 'Select Translation',
                           border: OutlineInputBorder(),
                         ),
-                        items: translations
-                            .map<DropdownMenuItem<String>>((dynamic translation) {
+                        items: translations.map<DropdownMenuItem<String>>(
+                            (dynamic translation) {
                           return DropdownMenuItem<String>(
                             value: translation['id'].toString(),
                             child: Text(
                               '${translation['name']} (${translation['language_name']})',
+                              // No constraints here, full text will be displayed
                             ),
                           );
                         }).toList(),
@@ -147,6 +152,22 @@ class _QuranScreenState extends State<QuranScreen> {
                             selectedTranslation = newValue!;
                           });
                         },
+                        // Use a custom child to constrain the title only
+                        selectedItemBuilder: (BuildContext context) {
+                          return translations
+                              .map<Widget>((dynamic translation) {
+                            return ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                  maxWidth: 200), // Limit title width
+                              child: Text(
+                                '${translation['name']} (${translation['language_name']})',
+                                overflow: TextOverflow
+                                    .ellipsis, // Truncate text if too long
+                                maxLines: 1,
+                              ),
+                            );
+                          }).toList();
+                        },
                       ),
                     ),
                     Padding(
@@ -154,7 +175,8 @@ class _QuranScreenState extends State<QuranScreen> {
                       child: TextField(
                         onChanged: _filterSurahs,
                         decoration: const InputDecoration(
-                          hintText: "Search Surah by number, English or Arabic name",
+                          hintText:
+                              "Search Surah by number, English or Arabic name",
                           border: OutlineInputBorder(),
                           prefixIcon: Icon(Icons.search),
                         ),
@@ -170,7 +192,8 @@ class _QuranScreenState extends State<QuranScreen> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                            margin: const EdgeInsets.symmetric(
+                                vertical: 4, horizontal: 8),
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: Colors.teal,
@@ -181,9 +204,11 @@ class _QuranScreenState extends State<QuranScreen> {
                               ),
                               title: Text(
                                 '${surah['name_simple']} - ${surah['name_arabic']}',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
                               ),
-                              subtitle: Text('Revelation Place: ${surah['revelation_place']}'),
+                              subtitle: Text(
+                                  'Revelation Place: ${surah['revelation_place']}'),
                               trailing: const Icon(Icons.arrow_forward_ios),
                               onTap: () {
                                 Navigator.push(
