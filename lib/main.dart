@@ -15,7 +15,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'utils/theme/theme.dart';
 
-
 void main() {
   runApp(MyApp());
 }
@@ -299,8 +298,8 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => QuranScreen(
-                          location: location,
-                        ),
+                            //     location: location,
+                            ),
                       ),
                     );
                   } else if (cardsData[index]['name'] == 'Prayer Timing') {
