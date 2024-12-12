@@ -10,10 +10,9 @@ class PrayerService {
     final now = DateTime.now();
     final date = DateFormat('dd-MM-yyyy').format(now);
 
-    // Get coordinates from location string (you might want to use geocoding here)
-    // For now, we'll use address-based API
+    // Change method to 99 for Hanafi school (instead of previous method 2)
     final String url =
-        'https://api.aladhan.com/v1/timingsByAddress/$date?address=$location&method=2&tune=0,0,0,0,0,0,0,0,0';
+        'https://api.aladhan.com/v1/timingsByAddress/$date?address=$location&method=99&tune=0,0,0,0,0,0,0,0,0';
 
     try {
       final response = await http.get(Uri.parse(url));
