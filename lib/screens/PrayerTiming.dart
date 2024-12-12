@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/prayer_service.dart';
@@ -12,29 +14,29 @@ class PrayerTimingScreen extends StatefulWidget {
 }
 
 class _PrayerTimingScreenState extends State<PrayerTimingScreen> {
-  late Future<Map<String, String>> _prayerTimes;
+  late Future<Map<String, dynamic>> _prayerData;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _prayerTimes =
-        PrayerService().getPrayerTimes(widget.location); // Fetch prayer times
+    _prayerData = PrayerService().getPrayerTimes(widget.location);
+    // Update remaining time every minute
+    _timer = Timer.periodic(Duration(minutes: 1), (timer) {
+      setState(() {
+        _prayerData = PrayerService().getPrayerTimes(widget.location);
+      });
+    });
   }
 
-  String _convertTo12HourFormat(String time) {
-    try {
-      final DateFormat inputFormat = DateFormat("HH:mm");
-      final DateFormat outputFormat = DateFormat("h:mm a");
-      final DateTime dateTime = inputFormat.parse(time);
-      return outputFormat.format(dateTime);
-    } catch (e) {
-      return time; // If there's an error, return the original time
-    }
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Get the current date (Gregorian)
     final String gregorianDate =
         DateFormat('dd MMMM yyyy').format(DateTime.now());
 
@@ -45,77 +47,86 @@ class _PrayerTimingScreenState extends State<PrayerTimingScreen> {
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
-      body: FutureBuilder<Map<String, String>>(
-        future: _prayerTimes,
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: _prayerData,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-                child: CircularProgressIndicator()); // Loading indicator
+            return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          } else if (!snapshot.hasData) {
             return Center(child: Text('No prayer times available'));
           }
 
-          final prayerTimes = snapshot.data!;
-
-          // Filter prayer times (Fajr to Isha)
-          final List<String> prayerNames = [
-            'Fajr',
-            'Dhuhr',
-            'Asr',
-            'Maghrib',
-            'Isha'
-          ];
-
-          final Map<String, String> filteredPrayerTimes = {};
-          for (var prayer in prayerNames) {
-            if (prayerTimes.containsKey(prayer)) {
-              filteredPrayerTimes[prayer] =
-                  _convertTo12HourFormat(prayerTimes[prayer]!);
-            }
-          }
+          final data = snapshot.data!;
+          final prayerTimes = data['timings'] as Map<String, dynamic>;
+          final currentPrayer = data['currentPrayer'] as String;
+          final remainingTime = data['remainingTime'] as String;
 
           return Column(
             children: [
-              // Location and mosque image with city name and Gregorian date overlay
+              // Location and mosque image section
               Container(
                 width: double.infinity,
-                height: MediaQuery.of(context).size.height *
-                    0.3, // 30% height of screen
+                height: MediaQuery.of(context).size.height * 0.3,
                 child: Stack(
                   children: [
-                    // Mosque image
                     Positioned.fill(
                       child: Image.network(
                         'https://t4.ftcdn.net/jpg/02/63/48/39/360_F_263483946_oUd7VNlXB7fbDhhmVkur6ytxBgsBTaH7.jpg',
-                        fit: BoxFit
-                            .fill, // Stretch the image to fit the width of the screen
+                        fit: BoxFit.cover,
                       ),
                     ),
-                    // Overlay text (city name and Gregorian date)
-                    Positioned(
-                      top: 20, // Position at the top of the image
-                      left: 0,
-                      right: 0,
+                    Container(
+                      color: Colors.black.withOpacity(0.3),
                       child: Center(
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
                               widget.location,
-                              style: TextStyle(
-                                fontSize: 18,
+                              style: const TextStyle(
+                                fontSize: 24,
                                 fontWeight: FontWeight.bold,
-                                color: const Color.fromARGB(255, 14, 14, 14),
+                                color: Colors.white,
                               ),
                             ),
                             SizedBox(height: 8),
                             Text(
-                              '$gregorianDate',
+                              gregorianDate,
                               style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: const Color.fromARGB(179, 8, 8, 8),
+                                fontSize: 18,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: 16),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.teal.withOpacity(0.8),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    'Next Prayer: $currentPrayer',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  Text(
+                                    remainingTime,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -126,48 +137,47 @@ class _PrayerTimingScreenState extends State<PrayerTimingScreen> {
                 ),
               ),
 
-              // Prayer times cards in horizontal ListView
+              // Prayer times list
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ListView.builder(
-                    itemCount: filteredPrayerTimes.length,
-                    itemBuilder: (context, index) {
-                      String prayerName =
-                          filteredPrayerTimes.keys.elementAt(index);
-                      String prayerTime = filteredPrayerTimes[prayerName] ?? '';
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16.0),
-                        child: Card(
-                          elevation: 6,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                // Prayer name on the left
-                                Text(
-                                  prayerName,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                // Prayer time on the right
-                                Text(
-                                  prayerTime,
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                              ],
-                            ),
+                child: ListView.builder(
+                  padding: EdgeInsets.all(16),
+                  itemCount: 5,
+                  itemBuilder: (context, index) {
+                    final prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+                    final prayer = prayers[index];
+                    final time = _convertTo12HourFormat(prayerTimes[prayer]);
+                    final isCurrentPrayer = prayer == currentPrayer;
+
+                    return Card(
+                      elevation: 4,
+                      margin: EdgeInsets.only(bottom: 12),
+                      color:
+                          isCurrentPrayer ? Colors.teal.shade50 : Colors.white,
+                      child: ListTile(
+                        leading: Icon(
+                          Icons.access_time,
+                          color: isCurrentPrayer ? Colors.teal : Colors.grey,
+                        ),
+                        title: Text(
+                          prayer,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: isCurrentPrayer
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                         ),
-                      );
-                    },
-                  ),
+                        trailing: Text(
+                          time,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color:
+                                isCurrentPrayer ? Colors.teal : Colors.black87,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
@@ -175,5 +185,16 @@ class _PrayerTimingScreenState extends State<PrayerTimingScreen> {
         },
       ),
     );
+  }
+
+  String _convertTo12HourFormat(String time) {
+    try {
+      final DateFormat inputFormat = DateFormat("HH:mm");
+      final DateFormat outputFormat = DateFormat("h:mm a");
+      final DateTime dateTime = inputFormat.parse(time);
+      return outputFormat.format(dateTime);
+    } catch (e) {
+      return time;
+    }
   }
 }
