@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:provider/provider.dart';
+import 'package:salahtracker/providers/prayer_timing_provider.dart';
 import 'package:salahtracker/screens/AllahNamesScreen.dart';
 import 'package:salahtracker/screens/AzkarCategoryScreen.dart';
 import 'package:salahtracker/screens/PrayerTiming.dart';
@@ -86,6 +88,7 @@ class SalahTrackerScreen extends StatefulWidget {
 class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
   final String currentDate = DateFormat('EEEE, dd MMMM').format(DateTime.now());
   String location = "Loading location...";
+  late Position position;
 
   final List<Map<String, dynamic>> cardsData = [
     {'name': 'Prayer Timing', 'icon': Icons.timelapse},
@@ -134,7 +137,7 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
       return;
     }
 
-    Position position = await Geolocator.getCurrentPosition(
+    position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
 
     try {
@@ -307,8 +310,11 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            PrayerTimingScreen(location: location),
+                        builder: (context) => PrayerTimingScreen(
+                          location: location,
+                          latitude: position.latitude,
+                          longitude: position.longitude,
+                        ),
                       ),
                     );
                   } else if (cardsData[index]['name'] == '6 Kalma') {
