@@ -1,51 +1,36 @@
-// prayer_timing_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/prayer_provider.dart';
+import '../services/prayer_service.dart';
 
 class PrayerTimingScreen extends StatelessWidget {
-  final String location;
+  final String? location;
 
-  PrayerTimingScreen({required this.location});
+  PrayerTimingScreen({this.location});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => PrayerTimingsProvider(location: location),
+      create: (_) => PrayerTimingsProvider(PrayerService(), location: location),
       child: Scaffold(
         appBar: AppBar(
           title: Text('Prayer Times'),
           backgroundColor: Colors.teal,
           foregroundColor: Colors.white,
           centerTitle: true,
-          actions: [
-            IconButton(
-              icon: Icon(Icons.refresh),
-              onPressed: () {
-                context.read<PrayerTimingsProvider>().refresh();
-              },
-            ),
-          ],
+          // actions: [
+          //   IconButton(
+          //     icon: Icon(Icons.refresh),
+          //     onPressed: () {
+          //       context.read<PrayerTimingsProvider>().refresh();
+          //     },
+          //   ),
+          // ],
         ),
         body: Consumer<PrayerTimingsProvider>(
           builder: (context, provider, child) {
             if (provider.isLoading && provider.prayerData == null) {
               return Center(child: CircularProgressIndicator());
-            }
-
-            if (provider.error != null) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(provider.error!),
-                    ElevatedButton(
-                      onPressed: provider.refresh,
-                      child: Text('Retry'),
-                    ),
-                  ],
-                ),
-              );
             }
 
             return Column(
@@ -69,7 +54,7 @@ class PrayerTimingScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                location,
+                                provider.location,
                                 style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,

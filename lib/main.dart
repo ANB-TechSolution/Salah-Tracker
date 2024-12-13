@@ -22,6 +22,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
+
         // Add other providers here if needed
       ],
       child: MyApp(),

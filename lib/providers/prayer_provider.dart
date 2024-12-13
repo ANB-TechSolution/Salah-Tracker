@@ -1,26 +1,26 @@
-// prayer_provider.dart
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import '../services/prayer_service.dart';
 
 class PrayerTimingsProvider with ChangeNotifier {
-  final String location;
-  final PrayerService _prayerService = PrayerService();
+  final PrayerService _prayerService;
+  String? _location;
 
   Map<String, dynamic>? _prayerData;
   Timer? _timer;
   bool _isLoading = true;
-  String? _error;
 
-  PrayerTimingsProvider({required this.location}) {
+  PrayerTimingsProvider(this._prayerService, {String? location}) {
+    _location = location;
     _initializePrayerTimes();
   }
 
   // Getters
   Map<String, dynamic>? get prayerData => _prayerData;
   bool get isLoading => _isLoading;
-  String? get error => _error;
+  String get location =>
+      _prayerData?['location'] ?? _location ?? 'Unknown Location';
 
   Map<String, dynamic> get timings => _prayerData?['timings'] ?? {};
   String get currentPrayer => _prayerData?['currentPrayer'] ?? '';
@@ -35,14 +35,13 @@ class PrayerTimingsProvider with ChangeNotifier {
   }
 
   Future<void> _fetchPrayerTimes() async {
-    try {
-      _isLoading = true;
-      notifyListeners();
+    _isLoading = true;
+    notifyListeners();
 
-      _prayerData = await _prayerService.getPrayerTimes(location);
-      _error = null;
-    } catch (e) {
-      _error = 'Failed to fetch prayer times: $e';
+    try {
+      // If a specific location is provided, use it. Otherwise, let service determine location
+      _prayerData =
+          await _prayerService.getPrayerTimes(customLocation: _location);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -69,6 +68,12 @@ class PrayerTimingsProvider with ChangeNotifier {
 
   // Refresh prayer times manually
   Future<void> refresh() => _fetchPrayerTimes();
+
+  // Allow updating location
+  Future<void> updateLocation(String location) async {
+    _location = location;
+    await _fetchPrayerTimes();
+  }
 
   @override
   void dispose() {
