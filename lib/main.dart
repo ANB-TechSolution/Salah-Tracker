@@ -10,6 +10,7 @@ import 'package:salahtracker/screens/QuranScreen.dart';
 import 'package:salahtracker/screens/SettingsScreen.dart';
 import 'package:salahtracker/screens/SixKalmaScreen.dart';
 import 'package:salahtracker/screens/TasbeehCounterScreen.dart';
+import 'package:salahtracker/screens/onBoardingScreen.dart';
 import 'package:salahtracker/utils/constants/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -65,9 +66,7 @@ class _MyAppState extends State<MyApp> {
       themeMode: _themeMode,
       theme: TAppTheme.lightTheme,
       darkTheme: TAppTheme.darkTheme,
-      home: SalahTrackerScreen(
-          toggleTheme: (ThemeMode themeMode) => _toggleTheme(themeMode),
-          currentThemeMode: _themeMode),
+      home: Onboardingscreen(),
     );
   }
 }
