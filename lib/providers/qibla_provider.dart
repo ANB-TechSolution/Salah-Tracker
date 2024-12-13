@@ -1,179 +1,144 @@
-// import 'dart:async';
-// import 'dart:math';
+import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:sensors_plus/sensors_plus.dart';
 
-// import 'package:flutter/foundation.dart';
-// import 'package:sensors_plus/sensors_plus.dart';
+// Qibla Service Provider
+class QiblaServiceProvider {
+  static const String _baseUrl = "http://api.aladhan.com/v1/qibla";
 
-// class QiblaSensorProvider with ChangeNotifier {
-//   double _currentAzimuth = 0.0;
-//   double _previousAzimuth = 0.0;
-//   double _smoothedAzimuth = 0.0;
-//   List<double> _accelerometerValues = [0, 0, 0];
-//   List<double> _magnetometerValues = [0, 0, 0];
+  Future<double> getQiblaDirection(double latitude, double longitude) async {
+    final url = Uri.parse("$_baseUrl/$latitude/$longitude");
+    final response = await http.get(url);
 
-//   // Smoothing parameters
-//   final double _smoothingFactor = 0.2;
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['data']['direction']; // Qibla direction in degrees
+    } else {
+      throw Exception("Failed to fetch Qibla direction");
+    }
+  }
+}
 
-//   // Getters
-//   double get smoothedAzimuth => _smoothedAzimuth;
+// Qibla Screen State Provider
+class QiblaScreenProvider extends ChangeNotifier {
+  double? _qiblaDirection;
+  double _currentAzimuth = 0.0;
+  List<double> _accelerometerValues = [0, 0, 0];
+  List<double> _magnetometerValues = [0, 0, 0];
+  bool _isLoading = true;
+  StreamSubscription? _accelerometerSubscription;
+  StreamSubscription? _magnetometerSubscription;
 
-//   StreamSubscription? _accelerometerSubscription;
-//   StreamSubscription? _magnetometerSubscription;
+  // Getters
+  double? get qiblaDirection => _qiblaDirection;
+  double get currentAzimuth => _currentAzimuth;
+  bool get isLoading => _isLoading;
 
-//   void initializeSensors() {
-//     // Cancel existing subscriptions if any
-//     _accelerometerSubscription?.cancel();
-//     _magnetometerSubscription?.cancel();
+  QiblaScreenProvider(QiblaServiceProvider service) {
+    _initializeSensors();
+    fetchQiblaDirection(service);
+  }
 
-//     _accelerometerSubscription = accelerometerEvents.listen((event) {
-//       updateAccelerometer([event.x, event.y, event.z]);
-//     }, onError: (error) {
-//       print('Accelerometer error: $error');
-//     });
+  void _initializeSensors() {
+    _accelerometerSubscription = accelerometerEvents.listen((event) {
+      _accelerometerValues = [event.x, event.y, event.z];
+      _calculateAzimuth();
+    });
 
-//     _magnetometerSubscription = magnetometerEvents.listen((event) {
-//       updateMagnetometer([event.x, event.y, event.z]);
-//     }, onError: (error) {
-//       print('Magnetometer error: $error');
-//     });
-//   }
+    _magnetometerSubscription = magnetometerEvents.listen((event) {
+      _magnetometerValues = [event.x, event.y, event.z];
+      _calculateAzimuth();
+    });
+  }
 
-//   void updateAccelerometer(List<double> values) {
-//     _accelerometerValues = values;
-//     _calculateSmoothedAzimuth();
-//   }
+  Future<void> fetchQiblaDirection(QiblaServiceProvider service) async {
+    try {
+      // Replace with actual location or use geolocation
+      final direction = await service.getQiblaDirection(40.7128, -74.0060);
+      _qiblaDirection = direction;
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoading = false;
+      _qiblaDirection = null;
+      notifyListeners();
+    }
+  }
 
-//   void updateMagnetometer(List<double> values) {
-//     _magnetometerValues = values;
-//     _calculateSmoothedAzimuth();
-//   }
+  void _calculateAzimuth() {
+    if (_accelerometerValues.isEmpty || _magnetometerValues.isEmpty) return;
 
-//   void _calculateSmoothedAzimuth() {
-//     if (_accelerometerValues.isEmpty || _magnetometerValues.isEmpty) return;
+    List<double> rotationMatrix = List.filled(9, 0.0);
+    List<double> orientation = List.filled(3, 0.0);
 
-//     List<double> rotationMatrix = List.filled(9, 0.0);
-//     List<double> orientation = List.filled(3, 0.0);
+    QiblaScreenProvider._getRotationMatrix(
+      rotationMatrix,
+      _accelerometerValues,
+      _magnetometerValues,
+    );
 
-//     bool success = _getRotationMatrix(
-//       rotationMatrix,
-//       _accelerometerValues,
-//       _magnetometerValues,
-//     );
+    QiblaScreenProvider._getOrientation(rotationMatrix, orientation);
 
-//     if (!success) return;
+    _currentAzimuth = (orientation[0] * (180 / pi) + 360) % 360;
+    notifyListeners();
+  }
 
-//     _getOrientation(rotationMatrix, orientation);
+  // Static methods for rotation calculations
+  static bool _getRotationMatrix(
+    List<double> R,
+    List<double> gravity,
+    List<double> geomagnetic,
+  ) {
+    double Ax = gravity[0], Ay = gravity[1], Az = gravity[2];
+    double Ex = geomagnetic[0], Ey = geomagnetic[1], Ez = geomagnetic[2];
 
-//     // Calculate raw azimuth
-//     _currentAzimuth = (orientation[0] * (180 / pi) + 360) % 360;
+    double Hx = Ey * Az - Ez * Ay;
+    double Hy = Ez * Ax - Ex * Az;
+    double Hz = Ex * Ay - Ey * Ax;
 
-//     // Calculate the smallest rotation
-//     double diff = _calculateShortestRotation(_previousAzimuth, _currentAzimuth);
+    double normH = sqrt(Hx * Hx + Hy * Hy + Hz * Hz);
+    if (normH < 0.1) return false;
 
-//     // Apply smoothing
-//     _smoothedAzimuth += _smoothingFactor * diff;
+    Hx /= normH;
+    Hy /= normH;
+    Hz /= normH;
 
-//     // Ensure _smoothedAzimuth stays within 0-360 range
-//     _smoothedAzimuth = (_smoothedAzimuth + 360) % 360;
+    double invA = 1.0 / sqrt(Ax * Ax + Ay * Ay + Az * Az);
+    Ax *= invA;
+    Ay *= invA;
+    Az *= invA;
 
-//     // Update previous azimuth
-//     _previousAzimuth = _currentAzimuth;
+    double Mx = Ay * Hz - Az * Hy;
+    double My = Az * Hx - Ax * Hz;
+    double Mz = Ax * Hy - Ay * Hx;
 
-//     notifyListeners();
-//   }
+    R[0] = Hx;
+    R[1] = Hy;
+    R[2] = Hz;
+    R[3] = Mx;
+    R[4] = My;
+    R[5] = Mz;
+    R[6] = Ax;
+    R[7] = Ay;
+    R[8] = Az;
 
-//   double _calculateShortestRotation(double from, double to) {
-//     double diff = to - from;
+    return true;
+  }
 
-//     // Normalize the difference to handle wrap-around
-//     if (diff.abs() > 180) {
-//       diff = diff > 0 ? diff - 360 : diff + 360;
-//     }
+  static void _getOrientation(List<double> R, List<double> values) {
+    values[0] = atan2(R[1], R[4]); // Azimuth
+    values[1] = asin(-R[7]); // Pitch
+    values[2] = atan2(-R[6], R[8]); // Roll
+  }
 
-//     return diff;
-//   }
-
-//   bool _getRotationMatrix(
-//     List<double> rotationMatrix,
-//     List<double> accelerometerValues,
-//     List<double> magnetometerValues,
-//   ) {
-//     // Check for valid input data
-//     if (accelerometerValues.length != 3 || magnetometerValues.length != 3) {
-//       return false;
-//     }
-
-//     // Normalize accelerometer and magnetometer vectors
-//     final normAccel = _calculateVectorNorm(accelerometerValues);
-//     final normMag = _calculateVectorNorm(magnetometerValues);
-
-//     // Prevent division by zero
-//     if (normAccel == 0 || normMag == 0) {
-//       return false;
-//     }
-
-//     // Normalize vectors
-//     final normAccelVector = _normalizeVector(accelerometerValues, normAccel);
-//     final normMagVector = _normalizeVector(magnetometerValues, normMag);
-
-//     // Compute East vector
-//     final east = _crossProduct(normMagVector, normAccelVector);
-//     final normEast = _calculateVectorNorm(east);
-
-//     if (normEast == 0) {
-//       return false;
-//     }
-
-//     final normalizedEast = _normalizeVector(east, normEast);
-
-//     // Compute North vector
-//     final north = _crossProduct(normAccelVector, normalizedEast);
-
-//     // Fill rotation matrix
-//     rotationMatrix[0] = normalizedEast[0];
-//     rotationMatrix[1] = normalizedEast[1];
-//     rotationMatrix[2] = normalizedEast[2];
-//     rotationMatrix[3] = north[0];
-//     rotationMatrix[4] = north[1];
-//     rotationMatrix[5] = north[2];
-//     rotationMatrix[6] = normAccelVector[0];
-//     rotationMatrix[7] = normAccelVector[1];
-//     rotationMatrix[8] = normAccelVector[2];
-
-//     return true;
-//   }
-
-//   void _getOrientation(List<double> rotationMatrix, List<double> orientation) {
-//     // Compute azimuth (rotation around Z axis)
-//     orientation[0] = atan2(rotationMatrix[1], rotationMatrix[4]);
-
-//     // Compute pitch (rotation around X axis)
-//     orientation[1] = asin(-rotationMatrix[7]);
-
-//     // Compute roll (rotation around Y axis)
-//     orientation[2] = atan2(-rotationMatrix[6], rotationMatrix[8]);
-//   }
-
-//   // Helper methods for vector operations
-//   double _calculateVectorNorm(List<double> vector) {
-//     return sqrt(
-//         vector[0] * vector[0] + vector[1] * vector[1] + vector[2] * vector[2]);
-//   }
-
-//   List<double> _normalizeVector(List<double> vector, double norm) {
-//     return [vector[0] / norm, vector[1] / norm, vector[2] / norm];
-//   }
-
-//   List<double> _crossProduct(List<double> a, List<double> b) {
-//     return [
-//       a[1] * b[2] - a[2] * b[1],
-//       a[2] * b[0] - a[0] * b[2],
-//       a[0] * b[1] - a[1] * b[0]
-//     ];
-//   }
-
-//   void dispose() {
-//     _accelerometerSubscription?.cancel();
-//     _magnetometerSubscription?.cancel();
-//   }
-// }
+  @override
+  void dispose() {
+    _accelerometerSubscription?.cancel();
+    _magnetometerSubscription?.cancel();
+    super.dispose();
+  }
+}
