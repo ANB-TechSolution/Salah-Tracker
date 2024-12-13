@@ -6,14 +6,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
 import '../utils/constants/colors.dart';
 
-class Onboardingscreen extends StatefulWidget {
-  const Onboardingscreen({super.key});
+class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
 
   @override
-  State<Onboardingscreen> createState() => _OnboardingscreenState();
+  State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingscreenState extends State<Onboardingscreen> {
+class _OnboardingScreenState extends State<OnboardingScreen> {
   ThemeMode _themeMode = ThemeMode.system;
   bool _locationPermissionGranted = false;
   bool _locationServicesEnabled = false;
@@ -29,16 +29,21 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
   Future<void> _checkLocationStatus() async {
     // Check if location permission is granted
     final permissionStatus = await Permission.location.status;
-    _locationPermissionGranted = permissionStatus.isGranted;
+    final locationPermissionGranted = permissionStatus.isGranted;
 
     // Check if location services are enabled
-    _locationServicesEnabled = await Geolocator.isLocationServiceEnabled();
+    final locationServicesEnabled = await Geolocator.isLocationServiceEnabled();
 
-    // If both are enabled, navigate to the next screen
+    if (mounted) {
+      setState(() {
+        _locationPermissionGranted = locationPermissionGranted;
+        _locationServicesEnabled = locationServicesEnabled;
+      });
+    }
+
+    // Navigate to the next screen if both conditions are met
     if (_locationPermissionGranted && _locationServicesEnabled) {
       _navigateToNextScreen();
-    } else {
-      setState(() {}); // Update UI if conditions not met
     }
   }
 
@@ -50,15 +55,23 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
 
   Future<void> _requestLocationPermission() async {
     final status = await Permission.location.request();
-    _locationPermissionGranted = status.isGranted;
-    setState(() {}); // Refresh UI
+    if (mounted) {
+      setState(() {
+        _locationPermissionGranted = status.isGranted;
+      });
+    }
   }
 
   Future<void> _requestLocationServices() async {
     if (!_locationServicesEnabled) {
       await Geolocator.openLocationSettings();
-      _locationServicesEnabled = await Geolocator.isLocationServiceEnabled();
-      setState(() {}); // Refresh UI
+      final locationServicesEnabled =
+          await Geolocator.isLocationServiceEnabled();
+      if (mounted) {
+        setState(() {
+          _locationServicesEnabled = locationServicesEnabled;
+        });
+      }
     }
   }
 
@@ -67,10 +80,7 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => SalahTrackerScreen(
-          toggleTheme: (ThemeMode themeMode) => _toggleTheme(themeMode),
-          currentThemeMode: _themeMode,
-        ),
+        builder: (context) => SalahTrackerScreen(),
       ),
     );
   }
@@ -121,8 +131,10 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
                     },
                     child: const Text(
                       'Enable Location',
-                      style:
-                          TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   if (!_locationPermissionGranted || !_locationServicesEnabled)
@@ -158,8 +170,10 @@ class _OnboardingscreenState extends State<Onboardingscreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('themeMode', themeMode.index);
 
-    setState(() {
-      _themeMode = themeMode;
-    });
+    if (mounted) {
+      setState(() {
+        _themeMode = themeMode;
+      });
+    }
   }
 }

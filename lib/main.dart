@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:salahtracker/screens/AllahNamesScreen.dart';
 import 'package:salahtracker/screens/AzkarCategoryScreen.dart';
 import 'package:salahtracker/screens/PrayerTiming.dart';
@@ -12,13 +14,19 @@ import 'package:salahtracker/screens/SixKalmaScreen.dart';
 import 'package:salahtracker/screens/TasbeehCounterScreen.dart';
 import 'package:salahtracker/screens/onBoardingScreen.dart';
 import 'package:salahtracker/utils/constants/colors.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
+import 'providers/setting_provider.dart';
 import 'utils/theme/theme.dart';
-//
 
 void main() {
-  runApp(MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        // Add other providers here if needed
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -27,7 +35,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  bool isDarkTheme = false;
   ThemeMode _themeMode = ThemeMode.system;
 
   @override
@@ -37,26 +44,28 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _loadThemeMode() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      int themeModeIndex = prefs.getInt('themeMode') ?? 0;
-      _themeMode = ThemeMode.values[themeModeIndex];
-    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        int themeModeIndex = prefs.getInt('themeMode') ?? 0;
+        _themeMode = ThemeMode.values[themeModeIndex];
+      });
+    } catch (e) {
+      debugPrint('Error loading theme mode: $e');
+    }
   }
 
   Future<void> _toggleTheme(ThemeMode themeMode) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('themeMode', themeMode.index);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('themeMode', themeMode.index);
 
-    setState(() {
-      _themeMode = themeMode;
-    });
-  }
-
-  void toggleTheme() {
-    setState(() {
-      isDarkTheme = !isDarkTheme;
-    });
+      setState(() {
+        _themeMode = themeMode;
+      });
+    } catch (e) {
+      debugPrint('Error toggling theme: $e');
+    }
   }
 
   @override
@@ -66,18 +75,12 @@ class _MyAppState extends State<MyApp> {
       themeMode: _themeMode,
       theme: TAppTheme.lightTheme,
       darkTheme: TAppTheme.darkTheme,
-      home: Onboardingscreen(),
+      home: OnboardingScreen(),
     );
   }
 }
 
 class SalahTrackerScreen extends StatefulWidget {
-  final void Function(ThemeMode) toggleTheme;
-  final ThemeMode currentThemeMode;
-
-  const SalahTrackerScreen(
-      {required this.toggleTheme, required this.currentThemeMode});
-
   @override
   _SalahTrackerScreenState createState() => _SalahTrackerScreenState();
 }
@@ -85,6 +88,7 @@ class SalahTrackerScreen extends StatefulWidget {
 class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
   final String currentDate = DateFormat('EEEE, dd MMMM').format(DateTime.now());
   String location = "Loading location...";
+  late Position position;
 
   final List<Map<String, dynamic>> cardsData = [
     {'name': 'Prayer Timing', 'icon': Icons.timelapse},
@@ -133,10 +137,10 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
       return;
     }
 
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-
     try {
+      position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+
       List<Placemark> placemarks =
           await placemarkFromCoordinates(position.latitude, position.longitude);
       Placemark place = placemarks[0];
@@ -159,111 +163,75 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
         child: AppBar(
           foregroundColor: Colors.white,
           backgroundColor: Colors.teal,
-          flexibleSpace: LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              double availableHeight = constraints.maxHeight;
-
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      height: availableHeight * 0.2,
-                    ),
-                    Text(
-                      'Salah Tracker',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ',
-                      style: TextStyle(
-                        fontSize: 22,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+          flexibleSpace: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Salah Tracker',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                  ),
                 ),
-              );
-            },
+                const SizedBox(height: 8),
+                const Text(
+                  'بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ',
+                  style: TextStyle(
+                    fontSize: 22,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      currentDate,
-                      style: const TextStyle(
-                        fontSize: 14,
-                      ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    currentDate,
+                    style: const TextStyle(
+                      fontSize: 14,
                     ),
-                    Text(
-                      location,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.white70,
-                      ),
+                  ),
+                  Text(
+                    location,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.white70,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
       drawer: Drawer(
-        child: Container(
-          color: Colors.teal[50],
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              const DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.teal,
-                ),
-                child: Text(
-                  'Menu',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                  ),
-                ),
+        child: ListView(
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Colors.teal),
+              child: Text(
+                'Menu',
+                style: TextStyle(color: Colors.white, fontSize: 24),
               ),
-              ListTile(
-                leading: const Icon(
-                  Icons.home,
-                  color: TColors.black,
-                ),
-                title: const Text(
-                  'Home',
-                  style: TextStyle(
-                    color: TColors.black,
-                  ),
-                ),
-                onTap: () {},
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.settings,
-                  color: TColors.black,
-                ),
-                title: const Text(
-                  'Settings',
-                  style: TextStyle(
-                    color: TColors.black,
-                  ),
-                ),
-                onTap: () {},
-              ),
-            ],
-          ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () {},
+            ),
+          ],
         ),
       ),
       body: Padding(
@@ -283,68 +251,68 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
               ),
               child: InkWell(
                 onTap: () {
-                  if (cardsData[index]['name'] == 'Settings') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SettingsScreen(
-                          toggleTheme: widget.toggleTheme,
-                          currentThemeMode: widget.currentThemeMode,
-                        ),
-                      ),
-                    );
-                  } else if (cardsData[index]['name'] == 'Learn Quran') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => QuranScreen(
-                            //     location: location,
-                            ),
-                      ),
-                    );
-                  } else if (cardsData[index]['name'] == 'Prayer Timing') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            PrayerTimingScreen(location: location),
-                      ),
-                    );
-                  } else if (cardsData[index]['name'] == '6 Kalma') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SixKalmaScreen(),
-                      ),
-                    );
-                  } else if (cardsData[index]['name'] == 'Azkar') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AzkarCategoryScreen(),
-                      ),
-                    );
-                  } else if (cardsData[index]['name'] == 'Allah 99 Names') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AllahNamesScreen(),
-                      ),
-                    );
-                  } else if (cardsData[index]['name'] == 'Tasbeeh Counter') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => TasbeehCounterScreen(),
-                      ),
-                    );
-                  } else if (cardsData[index]['name'] == 'Qibla Finder') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => QiblaScreen(),
-                      ),
-                    );
+                  switch (cardsData[index]['name']) {
+                    case 'Settings':
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => SettingsScreen(
+                                  location: location,
+                                  lat: position.latitude,
+                                  long: position.longitude,
+                                )),
+                      );
+                      break;
+                    case 'Learn Quran':
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => QuranScreen()),
+                      );
+                      break;
+                    case 'Prayer Timing':
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                PrayerTimingScreen(location: location)),
+                      );
+                      break;
+                    case '6 Kalma':
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => SixKalmaScreen()),
+                      );
+                      break;
+                    case 'Azkar':
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AzkarCategoryScreen()),
+                      );
+                      break;
+                    case 'Allah 99 Names':
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AllahNamesScreen()),
+                      );
+                      break;
+                    case 'Tasbeeh Counter':
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => TasbeehCounterScreen()),
+                      );
+                      break;
+                    case 'Qibla Finder':
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => QiblaScreen()),
+                      );
+                      break;
+                    default:
+                      break;
                   }
                 },
                 child: Column(
