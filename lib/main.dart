@@ -311,8 +311,8 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) =>
-                                QiblaScreen(rotationOffset: 90)),
+                            builder: (context) => QiblaScreen(
+                                rotationOffset: 90, location: location)),
                       );
                       break;
                     default:

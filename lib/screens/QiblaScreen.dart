@@ -6,10 +6,12 @@ import '../providers/qibla_provider.dart';
 
 class QiblaScreen extends StatelessWidget {
   final double rotationOffset;
+  final String location;
 
   const QiblaScreen({
     Key? key,
     this.rotationOffset = 0.0,
+    required this.location,
   }) : super(key: key);
 
   @override
@@ -33,8 +35,27 @@ class QiblaScreen extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: Column(
+                spacing: 100,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Column(
+                    children: [
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.location_on, color: Colors.red, size: 40),
+                          Text("Location  ",
+                              style: TextStyle(
+                                  fontSize: 30, fontWeight: FontWeight.w900)),
+                        ],
+                      ),
+                      Text(location,
+                          style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.white70)),
+                    ],
+                  ),
                   Stack(
                     alignment: Alignment.center,
                     children: [
