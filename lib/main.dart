@@ -16,6 +16,7 @@ import 'package:salahtracker/screens/onBoardingScreen.dart';
 import 'package:salahtracker/utils/constants/colors.dart';
 import 'providers/setting_provider.dart';
 import 'utils/theme/theme.dart';
+//
 
 void main() {
   runApp(

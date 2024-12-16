@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:salahtracker/screens/favoritesScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'surah_detail_screen.dart'; // Import SurahDetailsScreen
@@ -11,8 +13,7 @@ class QuranScreen extends StatefulWidget {
 class _QuranScreenState extends State<QuranScreen> {
   List<dynamic> surahs = [];
   List<dynamic> translations = [];
-  String selectedTranslation =
-      '131'; // Default translation ID for Saheeh International (English)
+  String selectedTranslation = '131'; // Default translation ID for Saheeh International (English)
   bool isLoading = true;
   bool hasError = false;
   String errorMessage = "";
@@ -21,6 +22,7 @@ class _QuranScreenState extends State<QuranScreen> {
   @override
   void initState() {
     super.initState();
+    fetchFavorites(); // Load favorites from local storage
     fetchTranslations().then((_) {
       fetchSurahs();
     });
@@ -73,6 +75,33 @@ class _QuranScreenState extends State<QuranScreen> {
     }
   }
 
+  // Load favorite Surahs from local storage
+  Future<void> fetchFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      favoriteSurahIds = prefs
+              .getStringList('favoriteSurahIds')
+              ?.map((e) => int.parse(e))
+              .toSet() ??
+          {};
+    });
+  }
+
+  // Add or remove Surah from favorites
+  Future<void> toggleFavorite(int surahId) async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      if (favoriteSurahIds.contains(surahId)) {
+        favoriteSurahIds.remove(surahId);
+      } else {
+        favoriteSurahIds.add(surahId);
+      }
+      prefs.setStringList('favoriteSurahIds',
+          favoriteSurahIds.map((e) => e.toString()).toList());
+    });
+  }
+
+  // Filter Surahs based on search query
   void _filterSurahs(String query) {
     setState(() {
       searchQuery = query.toLowerCase();
@@ -94,10 +123,22 @@ class _QuranScreenState extends State<QuranScreen> {
       appBar: AppBar(
         title: const Text("Al-Quran"),
         backgroundColor: Colors.teal,
-        actions: const [
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Icon(Icons.book),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite),
+            onPressed: () {
+              // Navigate to Favorites section
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FavoritesScreen(
+                    favoriteSurahIds: favoriteSurahIds,
+                    surahs: surahs,
+                    onToggleFavorite: toggleFavorite,
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -187,6 +228,8 @@ class _QuranScreenState extends State<QuranScreen> {
                         itemCount: filteredSurahs.length,
                         itemBuilder: (context, index) {
                           final surah = filteredSurahs[index];
+                          final isFavorite =
+                              favoriteSurahIds.contains(surah['id']);
                           return Card(
                             elevation: 4,
                             shape: RoundedRectangleBorder(
@@ -207,8 +250,7 @@ class _QuranScreenState extends State<QuranScreen> {
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold),
                               ),
-                              subtitle: Text(
-                                  'Revelation Place: ${surah['revelation_place']}'),
+                              subtitle: Text('Revelation Place: ${surah['revelation_place']}'),
                               trailing: const Icon(Icons.arrow_forward_ios),
                               onTap: () {
                                 Navigator.push(
