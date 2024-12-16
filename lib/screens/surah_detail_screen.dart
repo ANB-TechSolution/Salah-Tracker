@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SurahDetailScreen extends StatefulWidget {
   final int surahNumber;
@@ -18,13 +19,37 @@ class SurahDetailScreen extends StatefulWidget {
 class _SurahDetailScreenState extends State<SurahDetailScreen> {
   List<dynamic> verses = [];
   bool isLoading = true;
+  bool isDownloaded = false;
   bool hasError = false;
   String errorMessage = "";
 
   @override
   void initState() {
     super.initState();
-    fetchSurahDetails();
+    loadSurahDetails();
+  }
+
+  Future<void> loadSurahDetails() async {
+    try {
+      // Check if Surah details are cached in SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final cachedData = prefs.getString('surah_${widget.surahNumber}');
+      if (cachedData != null) {
+        setState(() {
+          verses = json.decode(cachedData);
+          isDownloaded = true;
+          isLoading = false;
+        });
+      } else {
+        fetchSurahDetails();
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        hasError = true;
+        errorMessage = "Error loading Surah details: $e";
+      });
+    }
   }
 
   Future<void> fetchSurahDetails() async {
@@ -32,6 +57,7 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
         "https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${widget.surahNumber}");
     final translationUrl = Uri.parse(
         "https://api.quran.com/api/v4/quran/translations/${widget.translationId}?chapter_number=${widget.surahNumber}");
+
     try {
       final responses =
           await Future.wait([http.get(url), http.get(translationUrl)]);
@@ -65,12 +91,38 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
     }
   }
 
+  Future<void> downloadSurah() async {
+    try {
+      // Cache Surah details in SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('surah_${widget.surahNumber}', json.encode(verses));
+
+      setState(() {
+        isDownloaded = true;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Surah downloaded successfully!")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to download Surah: $e")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Surah ${widget.surahNumber} Details"),
         backgroundColor: Colors.teal,
+        actions: [
+          if (!isDownloaded)
+            IconButton(
+              icon: const Icon(Icons.download),
+              onPressed: downloadSurah,
+            ),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -158,7 +210,6 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
                                   icon: const Icon(Icons.copy,
                                       color: Colors.teal),
                                   onPressed: () {
-                                    // Copy verse to clipboard
                                     Clipboard.setData(ClipboardData(
                                         text:
                                             "${verse['verse_number']}\n${verse['arabic_text']}\n${verse['translation_text']}"));
@@ -173,7 +224,6 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
                                   icon: const Icon(Icons.share,
                                       color: Colors.teal),
                                   onPressed: () {
-                                    // Share verse using share functionality
                                     Share.share(
                                         "${verse['verse_number']}\n${verse['arabic_text']}\n${verse['translation_text']}");
                                   },
