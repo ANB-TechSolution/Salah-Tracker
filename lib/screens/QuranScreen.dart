@@ -13,7 +13,9 @@ class QuranScreen extends StatefulWidget {
 class _QuranScreenState extends State<QuranScreen> {
   List<dynamic> surahs = [];
   List<dynamic> translations = [];
-  String selectedTranslation = '131'; // Default translation ID for Saheeh International (English)
+  Set<int> favoriteSurahIds = {}; // Store favorite Surah IDs
+  String selectedTranslation =
+      '131'; // Default translation ID for Saheeh International (English)
   bool isLoading = true;
   bool hasError = false;
   String errorMessage = "";
@@ -184,7 +186,6 @@ class _QuranScreenState extends State<QuranScreen> {
                             value: translation['id'].toString(),
                             child: Text(
                               '${translation['name']} (${translation['language_name']})',
-                              // No constraints here, full text will be displayed
                             ),
                           );
                         }).toList(),
@@ -192,22 +193,6 @@ class _QuranScreenState extends State<QuranScreen> {
                           setState(() {
                             selectedTranslation = newValue!;
                           });
-                        },
-                        // Use a custom child to constrain the title only
-                        selectedItemBuilder: (BuildContext context) {
-                          return translations
-                              .map<Widget>((dynamic translation) {
-                            return ConstrainedBox(
-                              constraints: const BoxConstraints(
-                                  maxWidth: 200), // Limit title width
-                              child: Text(
-                                '${translation['name']} (${translation['language_name']})',
-                                overflow: TextOverflow
-                                    .ellipsis, // Truncate text if too long
-                                maxLines: 1,
-                              ),
-                            );
-                          }).toList();
                         },
                       ),
                     ),
@@ -250,8 +235,17 @@ class _QuranScreenState extends State<QuranScreen> {
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold),
                               ),
-                              subtitle: Text('Revelation Place: ${surah['revelation_place']}'),
-                              trailing: const Icon(Icons.arrow_forward_ios),
+                              subtitle: Text(
+                                  'Revelation Place: ${surah['revelation_place']}'),
+                              trailing: IconButton(
+                                icon: Icon(
+                                  isFavorite
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  color: isFavorite ? Colors.red : Colors.grey,
+                                ),
+                                onPressed: () => toggleFavorite(surah['id']),
+                              ),
                               onTap: () {
                                 Navigator.push(
                                   context,
