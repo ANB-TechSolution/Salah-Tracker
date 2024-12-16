@@ -40,7 +40,7 @@ class AzkarListScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: Colors.white,
                     ),
                   ),
                   SizedBox(height: 10),
@@ -60,7 +60,7 @@ class AzkarListScreen extends StatelessWidget {
                     azkar['english']!,
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.black87,
+                      color: Colors.white,
                     ),
                   ),
                   SizedBox(height: 10),
@@ -78,7 +78,7 @@ class AzkarListScreen extends StatelessWidget {
                     azkar['urdu']!,
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.black87,
+                      color: Colors.white,
                     ),
                   ),
                   SizedBox(height: 20),
