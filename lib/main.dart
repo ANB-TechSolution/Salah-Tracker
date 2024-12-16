@@ -310,7 +310,9 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
                     case 'Qibla Finder':
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => QiblaScreen()),
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                QiblaScreen(rotationOffset: 90)),
                       );
                       break;
                     default:
