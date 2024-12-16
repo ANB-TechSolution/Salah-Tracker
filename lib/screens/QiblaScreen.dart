@@ -1,10 +1,6 @@
-import 'dart:convert';
-import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
-import 'package:sensors_plus/sensors_plus.dart';
 
 import '../providers/qibla_provider.dart';
 
