@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:salahtracker/utils/helper_function.dart';
 import 'package:share_plus/share_plus.dart';
 
 class AzkarListScreen extends StatelessWidget {
@@ -10,6 +11,8 @@ class AzkarListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isDark = HelperFunction.isDarkMode(context);
+
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.white,
@@ -34,14 +37,19 @@ class AzkarListScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Arabic Text
-                  Text(
-                    azkar['arabic']!,
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        azkar['arabic']!,
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: 10),
                   Divider(color: const Color.fromARGB(255, 207, 207, 207)),
@@ -60,7 +68,7 @@ class AzkarListScreen extends StatelessWidget {
                     azkar['english']!,
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.white,
+                      color: isDark ? Colors.white : Colors.black,
                     ),
                   ),
                   SizedBox(height: 10),
@@ -74,13 +82,25 @@ class AzkarListScreen extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 4),
-                  Text(
-                    azkar['urdu']!,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          azkar['urdu']!,
+                          textAlign: TextAlign.end,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
+                          overflow: TextOverflow
+                              .ellipsis, // Optional: Truncate overflow text
+                          maxLines: 3, // Optional: Limit to a single line
+                        ),
+                      ),
+                    ],
                   ),
+
                   SizedBox(height: 20),
                   // Copy and Share Buttons
                   Row(

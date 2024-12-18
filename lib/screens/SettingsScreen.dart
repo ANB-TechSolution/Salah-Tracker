@@ -40,7 +40,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Settings'),
+            title: const Text(
+              'Settings',
+              style: TextStyle(color: Colors.white),
+            ),
+            iconTheme: const IconThemeData(
+              color: Colors.white,
+            ),
+            // leading: Icon(Icons.arrow_back,color: Colors.white,),
             backgroundColor: Colors.teal,
           ),
           body: ListView(

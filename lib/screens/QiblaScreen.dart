@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:salahtracker/utils/helper_function.dart';
 import 'dart:math' as math;
 
 import '../providers/qibla_provider.dart';
@@ -16,6 +17,8 @@ class QiblaScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isDark = HelperFunction.isDarkMode(context);
+
     return ChangeNotifierProvider(
       create: (_) => QiblaScreenProvider(),
       child: Scaffold(
@@ -50,10 +53,10 @@ class QiblaScreen extends StatelessWidget {
                         ],
                       ),
                       Text(location,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w400,
-                              color: Colors.white70)),
+                              color: isDark ? Colors.white70 : Colors.black54)),
                     ],
                   ),
                   Stack(
