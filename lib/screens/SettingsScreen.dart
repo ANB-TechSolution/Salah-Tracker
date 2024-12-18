@@ -47,17 +47,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.all(16.0),
             children: [
               // Theme Toggle
-              SwitchListTile(
-                title: const Text("Dark Theme"),
-                subtitle: const Text("Toggle between light and dark mode"),
-                value: settings.themeMode == ThemeMode.dark,
-                activeColor: Colors.teal,
-                onChanged: (bool isDark) {
-                  settings
-                      .setThemeMode(isDark ? ThemeMode.dark : ThemeMode.light);
-                },
-              ),
-              const SizedBox(height: 20),
+
               Card(
                 margin: const EdgeInsets.only(bottom: 20),
                 child: Padding(
@@ -69,14 +59,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         "Location Details:",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 20,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text("Country: Pakistan"),
-                      Text("City: Lahore"),
-                      Text(
-                          "Location: ${widget.lat.toStringAsFixed(6)}, ${widget.long.toStringAsFixed(6)}"),
+                      Row(
+                        children: [
+                          Text(
+                            "Country: ",
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w700),
+                          ),
+                          Text("${widget.location.split(",")[1]}"),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            "City: ",
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w700),
+                          ),
+                          Text("${widget.location.split(",")[0]}"),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            "Location: ",
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w700),
+                          ),
+                          Text(
+                              "${widget.lat.toStringAsFixed(6)}, ${widget.long.toStringAsFixed(6)}"),
+                        ],
+                      ),
                     ],
                   ),
                 ),
