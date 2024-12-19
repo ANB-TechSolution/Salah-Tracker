@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class SurahDetailScreen extends StatefulWidget {
   final int surahNumber;
@@ -21,38 +22,66 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
   bool isLoading = true;
   bool isDownloaded = false;
   bool hasError = false;
+  bool isConnected = true;
   String errorMessage = "";
+  late Box surahBox;
 
   @override
   void initState() {
     super.initState();
-    loadSurahDetails();
+    initializeHive();
   }
 
-  Future<void> loadSurahDetails() async {
+  /// Initialize Hive and check data availability
+  Future<void> initializeHive() async {
+    await Hive.initFlutter();
+    surahBox = await Hive.openBox('surahBox');
+    checkConnectionAndLoadData();
+  }
+
+  /// Check network connection and load data accordingly
+  Future<void> checkConnectionAndLoadData() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    setState(() {
+      isConnected = connectivityResult != ConnectivityResult.none;
+    });
+
+    if (isConnected) {
+      await loadSurahDetails();
+    } else {
+      await loadCachedData();
+    }
+  }
+
+  /// Load cached Surah data if offline
+  Future<void> loadCachedData() async {
     try {
-      // Check if Surah details are cached in SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      final cachedData = prefs.getString('surah_${widget.surahNumber}');
+      final cachedData =
+          surahBox.get('surah_${widget.surahNumber}_${widget.translationId}');
       if (cachedData != null) {
         setState(() {
-          verses = json.decode(cachedData);
+          verses = List<dynamic>.from(json.decode(cachedData));
           isDownloaded = true;
           isLoading = false;
         });
       } else {
-        fetchSurahDetails();
+        setState(() {
+          isLoading = false;
+          hasError = true;
+          errorMessage = "No data available offline. Please download first.";
+        });
       }
     } catch (e) {
       setState(() {
         isLoading = false;
         hasError = true;
-        errorMessage = "Error loading Surah details: $e";
+        errorMessage = "Error loading cached data: $e";
       });
     }
   }
 
-  Future<void> fetchSurahDetails() async {
+  /// Fetch Surah details from the API
+  Future<void> loadSurahDetails() async {
     final url = Uri.parse(
         "https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${widget.surahNumber}");
     final translationUrl = Uri.parse(
@@ -86,23 +115,34 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
       setState(() {
         isLoading = false;
         hasError = true;
-        errorMessage = "Error fetching Surah details: $e";
+        errorMessage = "Connect Internet";
       });
     }
   }
 
+  /// Download and cache Surah data for offline use
   Future<void> downloadSurah() async {
     try {
-      // Cache Surah details in SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('surah_${widget.surahNumber}', json.encode(verses));
+      if (verses.isEmpty) {
+        await loadSurahDetails();
+      }
 
-      setState(() {
-        isDownloaded = true;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Surah downloaded successfully!")),
-      );
+      if (verses.isNotEmpty) {
+        await surahBox.put(
+          'surah_${widget.surahNumber}_${widget.translationId}',
+          json.encode(verses),
+        );
+
+        setState(() {
+          isDownloaded = true;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Surah downloaded successfully!")),
+        );
+      } else {
+        throw Exception("Failed to fetch Surah details.");
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Failed to download Surah: $e")),
@@ -137,16 +177,17 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            isLoading = true;
-                            hasError = false;
-                          });
-                          fetchSurahDetails();
-                        },
-                        child: const Text("Retry"),
-                      ),
+                      if (isConnected)
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              isLoading = true;
+                              hasError = false;
+                            });
+                            loadSurahDetails();
+                          },
+                          child: const Text("Retry"),
+                        ),
                     ],
                   ),
                 )
@@ -166,7 +207,6 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Verse Number
                             Text(
                               "Verse ${verse['verse_number'] ?? ''}",
                               style: const TextStyle(
@@ -176,8 +216,6 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
                               ),
                             ),
                             const SizedBox(height: 8),
-
-                            // Arabic Text
                             Text(
                               verse['arabic_text'] ??
                                   'No Arabic text available',
@@ -189,8 +227,6 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
                               textAlign: TextAlign.right,
                             ),
                             const Divider(height: 16, color: Colors.grey),
-
-                            // Translation Text
                             Text(
                               verse['translation_text'] ??
                                   'No translation available',
@@ -198,37 +234,6 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
                                 fontSize: 16,
                                 color: Colors.grey,
                               ),
-                            ),
-
-                            const SizedBox(height: 8),
-
-                            // Action Buttons
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.copy,
-                                      color: Colors.teal),
-                                  onPressed: () {
-                                    Clipboard.setData(ClipboardData(
-                                        text:
-                                            "${verse['verse_number']}\n${verse['arabic_text']}\n${verse['translation_text']}"));
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text(
-                                              "Verse copied to clipboard")),
-                                    );
-                                  },
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.share,
-                                      color: Colors.teal),
-                                  onPressed: () {
-                                    Share.share(
-                                        "${verse['verse_number']}\n${verse['arabic_text']}\n${verse['translation_text']}");
-                                  },
-                                ),
-                              ],
                             ),
                           ],
                         ),

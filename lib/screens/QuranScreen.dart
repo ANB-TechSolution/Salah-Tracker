@@ -13,9 +13,8 @@ class QuranScreen extends StatefulWidget {
 class _QuranScreenState extends State<QuranScreen> {
   List<dynamic> surahs = [];
   List<dynamic> translations = [];
-  Set<int> favoriteSurahIds = {}; // Store favorite Surah IDs
-  String selectedTranslation =
-      '131'; // Default translation ID for Saheeh International (English)
+  Set<int> favoriteSurahIds = {};
+  String selectedTranslation = '131';
   bool isLoading = true;
   bool hasError = false;
   String errorMessage = "";
@@ -24,39 +23,77 @@ class _QuranScreenState extends State<QuranScreen> {
   @override
   void initState() {
     super.initState();
-    fetchFavorites(); // Load favorites from local storage
+    fetchFavorites();
     fetchTranslations().then((_) {
       fetchSurahs();
     });
   }
 
-  // Fetch available translations
+  // Check if there is saved data
+  Future<bool> isDataSavedLocally() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.containsKey('savedSurahs');
+  }
+
+  // Save Surahs to local storage
+  Future<void> saveSurahsLocally(List<dynamic> surahs) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('savedSurahs', json.encode(surahs));
+  }
+
+  // Load Surahs from local storage
+  Future<void> loadSurahsLocally() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedSurahs = prefs.getString('savedSurahs');
+    if (savedSurahs != null) {
+      setState(() {
+        surahs = json.decode(savedSurahs);
+      });
+    }
+  }
+
+  // Save Translations to local storage
+  Future<void> saveTranslationsLocally(List<dynamic> translations) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('savedTranslations', json.encode(translations));
+  }
+
+  // Load Translations from local storage
+  Future<void> loadTranslationsLocally() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedTranslations = prefs.getString('savedTranslations');
+    if (savedTranslations != null) {
+      setState(() {
+        translations = json.decode(savedTranslations);
+      });
+    }
+  }
+
+  // Fetch translations from API or load from local storage
   Future<void> fetchTranslations() async {
-    final url =
-        Uri.parse("https://api.quran.com/api/v4/resources/translations");
     try {
+      final url = Uri.parse("https://api.quran.com/api/v4/resources/translations");
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
           translations = data['translations'];
         });
+        await saveTranslationsLocally(translations);
       } else {
         throw Exception(
             "Failed to load translations. Status code: ${response.statusCode}");
       }
     } catch (e) {
-      setState(() {
-        hasError = true;
-        errorMessage = "Error fetching translations: $e";
-      });
+      // Load locally if network fails
+      await loadTranslationsLocally();
     }
   }
 
-  // Fetch list of Surahs
+  // Fetch Surahs from API or load from local storage
   Future<void> fetchSurahs() async {
-    final url = Uri.parse("https://api.quran.com/api/v4/chapters");
     try {
+      final url = Uri.parse("https://api.quran.com/api/v4/chapters");
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -64,20 +101,30 @@ class _QuranScreenState extends State<QuranScreen> {
           surahs = data['chapters'];
           isLoading = false;
         });
+        await saveSurahsLocally(surahs);
       } else {
         throw Exception(
             "Failed to load Surahs. Status code: ${response.statusCode}");
       }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-        hasError = true;
-        errorMessage = "Error fetching Surahs: $e";
-      });
+      // Load locally if network fails
+      final dataSavedLocally = await isDataSavedLocally();
+      if (dataSavedLocally) {
+        await loadSurahsLocally();
+        setState(() {
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+          hasError = true;
+          errorMessage =
+              "Failed to load data. Please connect to the internet.";
+        });
+      }
     }
   }
 
-  // Load favorite Surahs from local storage
   Future<void> fetchFavorites() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -89,7 +136,6 @@ class _QuranScreenState extends State<QuranScreen> {
     });
   }
 
-  // Add or remove Surah from favorites
   Future<void> toggleFavorite(int surahId) async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -103,7 +149,6 @@ class _QuranScreenState extends State<QuranScreen> {
     });
   }
 
-  // Filter Surahs based on search query
   void _filterSurahs(String query) {
     setState(() {
       searchQuery = query.toLowerCase();
@@ -129,7 +174,6 @@ class _QuranScreenState extends State<QuranScreen> {
           IconButton(
             icon: const Icon(Icons.favorite),
             onPressed: () {
-              // Navigate to Favorites section
               Navigator.push(
                 context,
                 MaterialPageRoute(
