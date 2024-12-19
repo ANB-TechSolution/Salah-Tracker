@@ -236,110 +236,117 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
           ],
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: GridView.builder(
-          itemCount: cardsData.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16.0,
-            mainAxisSpacing: 16.0,
-          ),
-          itemBuilder: (context, index) {
-            return Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: InkWell(
-                onTap: () {
-                  switch (cardsData[index]['name']) {
-                    case 'Settings':
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => SettingsScreen(
-                                  location: location,
-                                  lat: position.latitude,
-                                  long: position.longitude,
-                                )),
-                      );
-                      break;
-                    case 'Learn Quran':
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => QuranScreen()),
-                      );
-                      break;
-                    case 'Prayer Timing':
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                PrayerTimingScreen(location: location)),
-                      );
-                      break;
-                    case '6 Kalma':
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => SixKalmaScreen()),
-                      );
-                      break;
-                    case 'Azkar':
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => AzkarCategoryScreen()),
-                      );
-                      break;
-                    case 'Allah 99 Names':
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => AllahNamesScreen()),
-                      );
-                      break;
-                    case 'Tasbeeh Counter':
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => TasbeehCounterScreen()),
-                      );
-                      break;
-                    case 'Qibla Finder':
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => QiblaScreen()),
-                      );
-                      break;
-                    default:
-                      break;
-                  }
-                },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      cardsData[index]['icon'],
-                      size: 40,
-                      color: Colors.teal,
+      body: location == "Loading location..."
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GridView.builder(
+                itemCount: cardsData.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16.0,
+                  mainAxisSpacing: 16.0,
+                ),
+                itemBuilder: (context, index) {
+                  return Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      cardsData[index]['name'],
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    child: InkWell(
+                      onTap: () {
+                        switch (cardsData[index]['name']) {
+                          case 'Settings':
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => SettingsScreen(
+                                        location: location,
+                                        lat: position.latitude,
+                                        long: position.longitude,
+                                      )),
+                            );
+                            break;
+                          case 'Learn Quran':
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => QuranScreen()),
+                            );
+                            break;
+                          case 'Prayer Timing':
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      PrayerTimingScreen(location: location)),
+                            );
+                            break;
+                          case '6 Kalma':
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => SixKalmaScreen()),
+                            );
+                            break;
+                          case 'Azkar':
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => AzkarCategoryScreen()),
+                            );
+                            break;
+                          case 'Allah 99 Names':
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => AllahNamesScreen()),
+                            );
+                            break;
+                          case 'Tasbeeh Counter':
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => TasbeehCounterScreen()),
+                            );
+                            break;
+                          case 'Qibla Finder':
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => QiblaScreen(
+                                      rotationOffset: 90, location: location)),
+                            );
+                            break;
+                          default:
+                            break;
+                        }
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            cardsData[index]['icon'],
+                            size: 40,
+                            color: Colors.teal,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            cardsData[index]['name'],
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
-            );
-          },
-        ),
-      ),
+            ),
     );
   }
 }

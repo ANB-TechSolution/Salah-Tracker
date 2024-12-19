@@ -1,144 +1,111 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
+import 'package:geolocator/geolocator.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+import 'dart:math' as math;
+import 'dart:async';
+import '../services/qibla_service.dart';
 
-// Qibla Service Provider
-class QiblaServiceProvider {
-  static const String _baseUrl = "http://api.aladhan.com/v1/qibla";
-
-  Future<double> getQiblaDirection(double latitude, double longitude) async {
-    final url = Uri.parse("$_baseUrl/$latitude/$longitude");
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return data['data']['direction']; // Qibla direction in degrees
-    } else {
-      throw Exception("Failed to fetch Qibla direction");
-    }
-  }
-}
-
-// Qibla Screen State Provider
 class QiblaScreenProvider extends ChangeNotifier {
-  double? _qiblaDirection;
-  double _currentAzimuth = 0.0;
-  List<double> _accelerometerValues = [0, 0, 0];
-  List<double> _magnetometerValues = [0, 0, 0];
+  final QiblaService _qiblaService = QiblaService();
+
+  double _qiblaDirection = 0.0;
+  double _deviceHeading = 0.0;
+  double _smoothedHeading = 0.0;
   bool _isLoading = true;
-  StreamSubscription? _accelerometerSubscription;
-  StreamSubscription? _magnetometerSubscription;
+  String _errorMessage = '';
 
   // Getters
-  double? get qiblaDirection => _qiblaDirection;
-  double get currentAzimuth => _currentAzimuth;
+  double get qiblaDirection => _qiblaDirection;
+  double get deviceHeading => _smoothedHeading;
   bool get isLoading => _isLoading;
+  String get errorMessage => _errorMessage;
 
-  QiblaScreenProvider(QiblaServiceProvider service) {
-    _initializeSensors();
-    fetchQiblaDirection(service);
+  late StreamSubscription _magnetometerSubscription;
+  Timer? _smoothingTimer;
+
+  // Low-pass filter alpha value (0 to 1)
+  // Lower values mean smoother but slower updates
+  final double _alpha = 0.3;
+
+  QiblaScreenProvider() {
+    _init();
   }
 
-  void _initializeSensors() {
-    _accelerometerSubscription = accelerometerEvents.listen((event) {
-      _accelerometerValues = [event.x, event.y, event.z];
-      _calculateAzimuth();
-    });
+  void _init() {
+    _fetchQiblaDirection();
+    _startMagnetometerListening();
+    _startSmoothingTimer();
+  }
 
-    _magnetometerSubscription = magnetometerEvents.listen((event) {
-      _magnetometerValues = [event.x, event.y, event.z];
-      _calculateAzimuth();
+  void _startSmoothingTimer() {
+    // Update smoothed heading 60 times per second
+    _smoothingTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
+      // Apply low-pass filter
+      _smoothedHeading =
+          _smoothedHeading + _alpha * (_deviceHeading - _smoothedHeading);
+      notifyListeners();
     });
   }
 
-  Future<void> fetchQiblaDirection(QiblaServiceProvider service) async {
+  void _startMagnetometerListening() {
+    _magnetometerSubscription =
+        magnetometerEvents.listen((MagnetometerEvent event) {
+      // Calculate heading from magnetometer data
+      double heading = math.atan2(event.y, event.x);
+
+      // Convert radians to degrees and normalize
+      heading = (heading * 180 / math.pi + 360) % 360;
+
+      _deviceHeading = heading;
+      // We don't call notifyListeners() here as the smoothing timer handles updates
+    });
+  }
+
+  Future<void> _fetchQiblaDirection() async {
     try {
-      // Replace with actual location or use geolocation
-      final direction = await service.getQiblaDirection(40.7128, -74.0060);
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied) {
+        _errorMessage = 'Location permissions are required';
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      final direction = await _qiblaService.getQiblaDirection(
+        position.latitude,
+        position.longitude,
+      );
+
       _qiblaDirection = direction;
       _isLoading = false;
       notifyListeners();
     } catch (e) {
+      _errorMessage = 'Error fetching Qibla direction';
       _isLoading = false;
-      _qiblaDirection = null;
       notifyListeners();
     }
   }
 
-  void _calculateAzimuth() {
-    if (_accelerometerValues.isEmpty || _magnetometerValues.isEmpty) return;
-
-    List<double> rotationMatrix = List.filled(9, 0.0);
-    List<double> orientation = List.filled(3, 0.0);
-
-    QiblaScreenProvider._getRotationMatrix(
-      rotationMatrix,
-      _accelerometerValues,
-      _magnetometerValues,
-    );
-
-    QiblaScreenProvider._getOrientation(rotationMatrix, orientation);
-
-    _currentAzimuth = (orientation[0] * (180 / pi) + 360) % 360;
+  // Method to recalibrate or refresh Qibla direction
+  Future<void> recalibrate() async {
+    _isLoading = true;
+    _errorMessage = '';
     notifyListeners();
-  }
-
-  // Static methods for rotation calculations
-  static bool _getRotationMatrix(
-    List<double> R,
-    List<double> gravity,
-    List<double> geomagnetic,
-  ) {
-    double Ax = gravity[0], Ay = gravity[1], Az = gravity[2];
-    double Ex = geomagnetic[0], Ey = geomagnetic[1], Ez = geomagnetic[2];
-
-    double Hx = Ey * Az - Ez * Ay;
-    double Hy = Ez * Ax - Ex * Az;
-    double Hz = Ex * Ay - Ey * Ax;
-
-    double normH = sqrt(Hx * Hx + Hy * Hy + Hz * Hz);
-    if (normH < 0.1) return false;
-
-    Hx /= normH;
-    Hy /= normH;
-    Hz /= normH;
-
-    double invA = 1.0 / sqrt(Ax * Ax + Ay * Ay + Az * Az);
-    Ax *= invA;
-    Ay *= invA;
-    Az *= invA;
-
-    double Mx = Ay * Hz - Az * Hy;
-    double My = Az * Hx - Ax * Hz;
-    double Mz = Ax * Hy - Ay * Hx;
-
-    R[0] = Hx;
-    R[1] = Hy;
-    R[2] = Hz;
-    R[3] = Mx;
-    R[4] = My;
-    R[5] = Mz;
-    R[6] = Ax;
-    R[7] = Ay;
-    R[8] = Az;
-
-    return true;
-  }
-
-  static void _getOrientation(List<double> R, List<double> values) {
-    values[0] = atan2(R[1], R[4]); // Azimuth
-    values[1] = asin(-R[7]); // Pitch
-    values[2] = atan2(-R[6], R[8]); // Roll
+    await _fetchQiblaDirection();
   }
 
   @override
   void dispose() {
-    _accelerometerSubscription?.cancel();
-    _magnetometerSubscription?.cancel();
+    _magnetometerSubscription.cancel();
+    _smoothingTimer?.cancel();
     super.dispose();
   }
 }

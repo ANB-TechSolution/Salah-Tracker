@@ -56,8 +56,7 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
   /// Load cached Surah data if offline
   Future<void> loadCachedData() async {
     try {
-      final cachedData =
-          surahBox.get('surah_${widget.surahNumber}_${widget.translationId}');
+      final cachedData = surahBox.get('surah_${widget.surahNumber}_${widget.translationId}');
       if (cachedData != null) {
         setState(() {
           verses = List<dynamic>.from(json.decode(cachedData));

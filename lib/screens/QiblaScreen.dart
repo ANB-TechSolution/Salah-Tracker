@@ -1,80 +1,96 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:salahtracker/utils/helper_function.dart';
+import 'dart:math' as math;
 
 import '../providers/qibla_provider.dart';
 
-// Qibla Screen with Provider
 class QiblaScreen extends StatelessWidget {
-  const QiblaScreen({Key? key}) : super(key: key);
+  final double rotationOffset;
+  final String location;
+
+  const QiblaScreen({
+    Key? key,
+    this.rotationOffset = 0.0,
+    required this.location,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        Provider<QiblaServiceProvider>(
-          create: (_) => QiblaServiceProvider(),
+    bool isDark = HelperFunction.isDarkMode(context);
+
+    return ChangeNotifierProvider(
+      create: (_) => QiblaScreenProvider(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Qibla Direction'),
         ),
-        ChangeNotifierProxyProvider<QiblaServiceProvider, QiblaScreenProvider>(
-          create: (context) => QiblaScreenProvider(
-            Provider.of<QiblaServiceProvider>(context, listen: false),
-          ),
-          update: (context, service, previous) =>
-              previous ?? QiblaScreenProvider(service),
+        body: Consumer<QiblaScreenProvider>(
+          builder: (context, provider, child) {
+            if (provider.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (provider.errorMessage.isNotEmpty) {
+              return Center(child: Text(provider.errorMessage));
+            }
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              child: Column(
+          //      spacing: 100,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Column(
+                    children: [
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.location_on, color: Colors.red, size: 40),
+                          Text("Location  ",
+                              style: TextStyle(
+                                  fontSize: 30, fontWeight: FontWeight.w900)),
+                        ],
+                      ),
+                      Text(location,
+                          style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w400,
+                              color: isDark ? Colors.white70 : Colors.black54)),
+                    ],
+                  ),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      AnimatedRotation(
+                        turns: (-provider.deviceHeading + rotationOffset) / 360,
+                        duration: const Duration(milliseconds: 16),
+                        child: Image.asset(
+                          'assets/images/dial.png',
+                          width: double.maxFinite,
+                        ),
+                      ),
+                      AnimatedRotation(
+                        turns: (provider.qiblaDirection -
+                                provider.deviceHeading +
+                                rotationOffset) /
+                            360,
+                        duration: const Duration(milliseconds: 16),
+                        child: Image.asset(
+                          'assets/images/qibla_arrow.png',
+                          width: 300,
+                          height: 300,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            );
+          },
         ),
-      ],
-      child: const QiblaScreenView(),
-    );
-  }
-}
-
-class QiblaScreenView extends StatelessWidget {
-  const QiblaScreenView({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final provider = Provider.of<QiblaScreenProvider>(context);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Qibla Finder'),
-        backgroundColor: Colors.teal,
       ),
-      body: Center(
-        child: provider.isLoading
-            ? const CircularProgressIndicator()
-            : provider.qiblaDirection == null
-                ? const Text('Unable to determine Qibla direction')
-                : _buildQiblaView(context, provider),
-      ),
-    );
-  }
-
-  Widget _buildQiblaView(BuildContext context, QiblaScreenProvider provider) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        // Compass dial
-        Transform.rotate(
-          angle: -provider.currentAzimuth * (pi / 180),
-          child: const Image(
-            image: AssetImage("assets/images/dial.png"),
-            fit: BoxFit.contain,
-          ),
-        ),
-        // Qibla arrow
-        Transform.rotate(
-          angle: (((provider.qiblaDirection ?? 0) -
-                  provider.currentAzimuth +
-                  195) *
-              (pi / 180)),
-          child: Image(
-            image: const AssetImage("assets/images/qibla_arrow.png"),
-            height: MediaQuery.of(context).size.height * 0.4,
-            width: MediaQuery.of(context).size.width * 0.4,
-          ),
-        ),
-      ],
     );
   }
 }
