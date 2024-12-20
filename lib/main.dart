@@ -11,6 +11,7 @@ import 'package:salahtracker/screens/SixKalmaScreen.dart';
 import 'package:salahtracker/screens/TasbeehCounterScreen.dart';
 import 'package:salahtracker/screens/onBoardingScreen.dart';
 import 'providers/main_screen_provider.dart';
+import 'providers/on_boarding_provider.dart';
 import 'providers/setting_provider.dart';
 import 'utils/theme/theme.dart';
 //
@@ -21,6 +22,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => MainScreenProvider()),
+        ChangeNotifierProvider(create: (_) => OnboardingProvider()),
       ],
       child: MyApp(),
     ),
@@ -40,6 +42,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    Provider.of<OnboardingProvider>(context, listen: false).init();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.system,
