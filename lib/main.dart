@@ -12,6 +12,7 @@ import 'package:salahtracker/screens/TasbeehCounterScreen.dart';
 import 'package:salahtracker/screens/onBoardingScreen.dart';
 import 'providers/main_screen_provider.dart';
 import 'providers/on_boarding_provider.dart';
+import 'providers/quran_screen_provider.dart';
 import 'providers/setting_provider.dart';
 import 'utils/theme/theme.dart';
 //
@@ -23,6 +24,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => MainScreenProvider()),
         ChangeNotifierProvider(create: (_) => OnboardingProvider()),
+        ChangeNotifierProvider(create: (_) => QuranProvider()),
       ],
       child: MyApp(),
     ),
