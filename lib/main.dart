@@ -160,13 +160,7 @@ class SalahTrackerScreen extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => SettingsScreen(
-                                        location: mainScreenProvider.location,
-                                        lat: mainScreenProvider
-                                            .position.latitude,
-                                        long: mainScreenProvider
-                                            .position.longitude,
-                                      )),
+                                  builder: (context) => SettingsScreen()),
                             );
                             break;
                           case 'Learn Quran':
