@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:salahtracker/screens/AllahNamesScreen.dart';
 import 'package:salahtracker/screens/AzkarCategoryScreen.dart';
 import 'package:salahtracker/screens/PrayerTiming.dart';
@@ -13,7 +10,7 @@ import 'package:salahtracker/screens/SettingsScreen.dart';
 import 'package:salahtracker/screens/SixKalmaScreen.dart';
 import 'package:salahtracker/screens/TasbeehCounterScreen.dart';
 import 'package:salahtracker/screens/onBoardingScreen.dart';
-import 'package:salahtracker/utils/constants/colors.dart';
+import 'providers/main_screen_provider.dart';
 import 'providers/setting_provider.dart';
 import 'utils/theme/theme.dart';
 //
@@ -23,8 +20,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
-
-        // Add other providers here if needed
+        ChangeNotifierProvider(create: (_) => MainScreenProvider()),
       ],
       child: MyApp(),
     ),
@@ -37,147 +33,49 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  ThemeMode _themeMode = ThemeMode.system;
-
   @override
   void initState() {
     super.initState();
-    _loadThemeMode();
-  }
-
-  Future<void> _loadThemeMode() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      setState(() {
-        int themeModeIndex = prefs.getInt('themeMode') ?? 0;
-        _themeMode = ThemeMode.values[themeModeIndex];
-      });
-    } catch (e) {
-      debugPrint('Error loading theme mode: $e');
-    }
-  }
-
-  Future<void> _toggleTheme(ThemeMode themeMode) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('themeMode', themeMode.index);
-
-      setState(() {
-        _themeMode = themeMode;
-      });
-    } catch (e) {
-      debugPrint('Error toggling theme: $e');
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      themeMode: _themeMode,
+      themeMode: ThemeMode.system,
       theme: TAppTheme.lightTheme,
       darkTheme: TAppTheme.darkTheme,
-      home: OnboardingScreen(),
+      home: const OnboardingScreen(),
     );
   }
 }
 
-class SalahTrackerScreen extends StatefulWidget {
-  @override
-  _SalahTrackerScreenState createState() => _SalahTrackerScreenState();
-}
-
-class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
+class SalahTrackerScreen extends StatelessWidget {
   final String currentDate = DateFormat('EEEE, dd MMMM').format(DateTime.now());
-  String location = "Loading location...";
-  late Position position;
-
-  final List<Map<String, dynamic>> cardsData = [
-    {'name': 'Prayer Timing', 'icon': Icons.timelapse},
-    {'name': 'Learn Quran', 'icon': Icons.book},
-    {'name': '6 Kalma', 'icon': Icons.brightness_6},
-    {'name': 'Azkar', 'icon': Icons.nightlight_round},
-    {'name': 'Allah 99 Names', 'icon': Icons.star},
-    {'name': 'Tasbeeh Counter', 'icon': Icons.speed},
-    {'name': 'Qibla Finder', 'icon': Icons.compare_arrows_sharp},
-    {'name': 'Settings', 'icon': Icons.settings},
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _getLocation();
-  }
-
-  Future<void> _getLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      setState(() {
-        location = "Location services are disabled.";
-      });
-      return;
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        setState(() {
-          location = "Location permission denied.";
-        });
-        return;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      setState(() {
-        location = "Location permissions are permanently denied.";
-      });
-      return;
-    }
-
-    try {
-      position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-
-      List<Placemark> placemarks =
-          await placemarkFromCoordinates(position.latitude, position.longitude);
-      Placemark place = placemarks[0];
-
-      setState(() {
-        location = "${place.locality}, ${place.country}";
-      });
-    } catch (e) {
-      setState(() {
-        location = "Could not fetch location.";
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+    final mainScreenProvider = Provider.of<MainScreenProvider>(context);
+
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(200.0),
         child: AppBar(
           foregroundColor: Colors.white,
           backgroundColor: Colors.teal,
-          flexibleSpace: Center(
+          flexibleSpace: const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   'Salah Tracker',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 22,
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
+                SizedBox(height: 8),
+                Text(
                   'بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ',
                   style: TextStyle(
                     fontSize: 22,
@@ -201,7 +99,7 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
                     ),
                   ),
                   Text(
-                    location,
+                    mainScreenProvider.location,
                     style: const TextStyle(
                       fontSize: 12,
                       color: Colors.white70,
@@ -236,14 +134,14 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
           ],
         ),
       ),
-      body: location == "Loading location..."
+      body: mainScreenProvider.location == "Loading location..."
           ? const Center(
               child: CircularProgressIndicator(),
             )
           : Padding(
               padding: const EdgeInsets.all(16.0),
               child: GridView.builder(
-                itemCount: cardsData.length,
+                itemCount: mainScreenProvider.cardsData.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   crossAxisSpacing: 16.0,
@@ -257,15 +155,17 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
                     ),
                     child: InkWell(
                       onTap: () {
-                        switch (cardsData[index]['name']) {
+                        switch (mainScreenProvider.cardsData[index]['name']) {
                           case 'Settings':
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                   builder: (context) => SettingsScreen(
-                                        location: location,
-                                        lat: position.latitude,
-                                        long: position.longitude,
+                                        location: mainScreenProvider.location,
+                                        lat: mainScreenProvider
+                                            .position.latitude,
+                                        long: mainScreenProvider
+                                            .position.longitude,
                                       )),
                             );
                             break;
@@ -280,8 +180,8 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) =>
-                                      PrayerTimingScreen(location: location)),
+                                  builder: (context) => PrayerTimingScreen(
+                                      location: mainScreenProvider.location)),
                             );
                             break;
                           case '6 Kalma':
@@ -317,7 +217,8 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
                               context,
                               MaterialPageRoute(
                                   builder: (context) => QiblaScreen(
-                                      rotationOffset: 90, location: location)),
+                                      rotationOffset: 90,
+                                      location: mainScreenProvider.location)),
                             );
                             break;
                           default:
@@ -328,13 +229,13 @@ class _SalahTrackerScreenState extends State<SalahTrackerScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            cardsData[index]['icon'],
+                            mainScreenProvider.cardsData[index]['icon'],
                             size: 40,
                             color: Colors.teal,
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            cardsData[index]['name'],
+                            mainScreenProvider.cardsData[index]['name'],
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
