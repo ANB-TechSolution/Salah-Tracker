@@ -6,6 +6,8 @@ import 'dart:async';
 import '../services/qibla_service.dart';
 
 class QiblaScreenProvider extends ChangeNotifier {
+  final double long;
+  final double lat;
   final QiblaService _qiblaService = QiblaService();
 
   double _qiblaDirection = 0.0;
@@ -27,7 +29,7 @@ class QiblaScreenProvider extends ChangeNotifier {
   // Lower values mean smoother but slower updates
   final double _alpha = 0.25;
 
-  QiblaScreenProvider() {
+  QiblaScreenProvider(this.long, this.lat) {
     _init();
   }
 
@@ -63,25 +65,9 @@ class QiblaScreenProvider extends ChangeNotifier {
 
   Future<void> _fetchQiblaDirection() async {
     try {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.denied) {
-        _errorMessage = 'Location permissions are required';
-        _isLoading = false;
-        notifyListeners();
-        return;
-      }
-
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
       final direction = await _qiblaService.getQiblaDirection(
-        position.latitude,
-        position.longitude,
+        lat,
+        long,
       );
 
       _qiblaDirection = direction;

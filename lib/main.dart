@@ -14,6 +14,7 @@ import 'providers/main_screen_provider.dart';
 import 'providers/on_boarding_provider.dart';
 import 'providers/quran_screen_provider.dart';
 import 'providers/setting_provider.dart';
+import 'screens/background_slider.dart';
 import 'utils/theme/theme.dart';
 //
 
@@ -65,53 +66,66 @@ class SalahTrackerScreen extends StatelessWidget {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(200.0),
-        child: AppBar(
-          foregroundColor: Colors.white,
-          backgroundColor: Colors.teal,
-          flexibleSpace: const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Salah Tracker',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                  ),
+        child: Stack(
+          children: [
+            // Background Slider
+            SizedBox(
+              height: 300,
+              child: BackgroundSlider(),
+            ),
+            // AppBar Content
+            AppBar(
+              foregroundColor: Colors.white,
+              backgroundColor:
+                  Colors.black.withOpacity(0.3), // Semi-transparent overlay
+              flexibleSpace: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(height: 50),
+                    Text(
+                      'Salah Tracker',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ',
+                      style: TextStyle(
+                        fontSize: 22,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 8),
-                Text(
-                  'بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ',
-                  style: TextStyle(
-                    fontSize: 22,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
+              ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        currentDate,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        mainScreenProvider.location,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
-            ),
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    currentDate,
-                    style: const TextStyle(
-                      fontSize: 14,
-                    ),
-                  ),
-                  Text(
-                    mainScreenProvider.location,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ],
-              ),
             ),
           ],
         ),
@@ -222,8 +236,13 @@ class SalahTrackerScreen extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                   builder: (context) => QiblaScreen(
-                                      rotationOffset: 90,
-                                      location: mainScreenProvider.location)),
+                                        rotationOffset: 90,
+                                        location: mainScreenProvider.location,
+                                        lat: mainScreenProvider
+                                            .position.latitude,
+                                        long: mainScreenProvider
+                                            .position.longitude,
+                                      )),
                             );
                             break;
                           default:
@@ -233,10 +252,12 @@ class SalahTrackerScreen extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            mainScreenProvider.cardsData[index]['icon'],
-                            size: 40,
-                            color: Colors.teal,
+                          Image.asset(
+                            mainScreenProvider.cardsData[index]['image'],
+                            height: 90,
+                            width: 90,
+                            color: Colors
+                                .teal, // Optional: remove if you want original image colors
                           ),
                           const SizedBox(height: 8),
                           Text(

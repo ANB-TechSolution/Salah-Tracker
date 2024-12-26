@@ -7,11 +7,15 @@ import '../providers/qibla_provider.dart';
 class QiblaScreen extends StatelessWidget {
   final double rotationOffset;
   final String location;
+  final double long;
+  final double lat;
 
   const QiblaScreen({
     Key? key,
     this.rotationOffset = 0.0,
     required this.location,
+    required this.long,
+    required this.lat,
   }) : super(key: key);
 
   @override
@@ -19,7 +23,7 @@ class QiblaScreen extends StatelessWidget {
     bool isDark = HelperFunction.isDarkMode(context);
 
     return ChangeNotifierProvider(
-      create: (_) => QiblaScreenProvider(),
+      create: (_) => QiblaScreenProvider(long, lat),
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Qibla Direction'),

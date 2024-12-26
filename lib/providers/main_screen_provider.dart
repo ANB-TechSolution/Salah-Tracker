@@ -10,14 +10,14 @@ class MainScreenProvider with ChangeNotifier {
   Position get position => _position;
 
   final List<Map<String, dynamic>> _cardsData = [
-    {'name': 'Prayer Timing', 'icon': Icons.timelapse},
-    {'name': 'Learn Quran', 'icon': Icons.book},
-    {'name': '6 Kalma', 'icon': Icons.brightness_6},
-    {'name': 'Azkar', 'icon': Icons.nightlight_round},
-    {'name': 'Allah 99 Names', 'icon': Icons.star},
-    {'name': 'Tasbeeh Counter', 'icon': Icons.speed},
-    {'name': 'Qibla Finder', 'icon': Icons.compare_arrows_sharp},
-    {'name': 'Settings', 'icon': Icons.settings},
+    {'name': 'Prayer Timing', 'image': 'assets/icons/timings.png'},
+    {'name': 'Learn Quran', 'image': 'assets/icons/quran.png'},
+    {'name': '6 Kalma', 'image': 'assets/icons/prayer.png'},
+    {'name': 'Azkar', 'image': 'assets/icons/dua.png'},
+    {'name': 'Allah 99 Names', 'image': 'assets/icons/allahnames.png'},
+    {'name': 'Tasbeeh Counter', 'image': 'assets/icons/counter.png'},
+    {'name': 'Qibla Finder', 'image': 'assets/icons/compass.png'},
+    {'name': 'Settings', 'image': 'assets/icons/settings.png'},
   ];
 
   List<Map<String, dynamic>> get cardsData => _cardsData;
