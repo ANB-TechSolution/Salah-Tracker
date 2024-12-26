@@ -42,8 +42,8 @@ class PrayerTimingScreen extends StatelessWidget {
                   child: Stack(
                     children: [
                       Positioned.fill(
-                        child: Image.network(
-                          'https://t4.ftcdn.net/jpg/02/63/48/39/360_F_263483946_oUd7VNlXB7fbDhhmVkur6ytxBgsBTaH7.jpg',
+                        child: Image.asset(
+                          'assets/images/prayer_timing.jpg',
                           fit: BoxFit.cover,
                         ),
                       ),

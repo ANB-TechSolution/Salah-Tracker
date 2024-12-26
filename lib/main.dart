@@ -134,7 +134,13 @@ class SalahTrackerScreen extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.settings),
               title: const Text('Settings'),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (context) {
+                    return SettingsScreen();
+                  },
+                ));
+              },
             ),
           ],
         ),
