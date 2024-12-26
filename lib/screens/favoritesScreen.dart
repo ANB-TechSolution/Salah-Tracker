@@ -35,9 +35,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
     // Show a snackbar confirming the deletion
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      const SnackBar(
         content: Text('Surah removed from favorites.'),
-        duration: const Duration(seconds: 2),
+        duration: Duration(seconds: 2),
       ),
     );
   }

@@ -64,28 +64,29 @@ class AzkarCategoryScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.white,
-        title: Text('Azkar Categories'),
+        title: const Text('Azkar Categories'),
         backgroundColor: Colors.teal,
       ),
       body: ListView.builder(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         itemCount: azkarCategories.length,
         itemBuilder: (context, index) {
           final category = azkarCategories[index];
           return Card(
             elevation: 4,
-            margin: EdgeInsets.symmetric(vertical: 8),
+            margin: const EdgeInsets.symmetric(vertical: 8),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
             child: ListTile(
               title: Text(
                 category['name']!,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               subtitle: Text(
                 '${category['urdu']} | ${category['arabic']}',
-                style: TextStyle(fontSize: 14),
+                style: const TextStyle(fontSize: 14),
               ),
               onTap: () {
                 Navigator.push(

@@ -11,7 +11,7 @@ class TasbeehCounterScreen extends StatefulWidget {
 
 class _TasbeehCounterScreenState extends State<TasbeehCounterScreen> {
   int _counter = 0; // Tasbeeh counter
-  Color _color = Colors.green.withOpacity(0.1); // Initial opacity
+  Color _color = Colors.teal.withAlpha(10); // Initial alpha
   bool _isTapped = false; // Flag to track if the user has tapped
   bool _isCounterBlack =
       true; // Flag to switch the counter color after 7 counts
@@ -23,7 +23,7 @@ class _TasbeehCounterScreenState extends State<TasbeehCounterScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       _counter = prefs.getInt('counter') ?? 0; // Default to 0 if no saved count
-      _color = Colors.green.withOpacity(_counter / 33.0);
+      _color = Colors.teal.withAlpha((_counter * 8).clamp(10, 255));
     });
   }
 
@@ -42,11 +42,11 @@ class _TasbeehCounterScreenState extends State<TasbeehCounterScreen> {
         if (_counter > 4) {
           _isCounterBlack = false; // Change counter color to white after 7
         }
-        _color = Colors.green.withOpacity(_counter / 33.0);
+        _color = Colors.teal.withAlpha((_counter * 3).clamp(10, 255));
       } else {
         _counter = 0;
-        _color = Colors.green
-            .withOpacity(0.1); // Reset the opacity when count reaches 33
+        _color =
+            Colors.teal.withAlpha(10); // Reset the alpha when count reaches 33
         _isCounterBlack = true; // Reset counter color back to black
       }
       _isTapped = true; // Mark that the user has tapped
@@ -57,7 +57,7 @@ class _TasbeehCounterScreenState extends State<TasbeehCounterScreen> {
   void _resetCounter() {
     setState(() {
       _counter = 0;
-      _color = Colors.green.withOpacity(0.1);
+      _color = Colors.teal.withAlpha(10);
       _isCounterBlack = true; // Reset to black after reset
       _isTapped = false; // Reset the tap flag
     });
@@ -74,13 +74,13 @@ class _TasbeehCounterScreenState extends State<TasbeehCounterScreen> {
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.white,
-        title: Text('Tasbeeh Counter'),
+        title: const Text('Tasbeeh Counter'),
         backgroundColor: Colors.teal,
       ),
       body: GestureDetector(
         onTap: _incrementCounter,
         child: Container(
-          color: _color, // Background color changes with opacity
+          color: _color, // Background color changes with alpha
           child: Stack(
             children: [
               Center(
@@ -97,15 +97,13 @@ class _TasbeehCounterScreenState extends State<TasbeehCounterScreen> {
                               : Colors.black87,
                         ),
                       ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Text(
                       'Count: $_counter',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 40,
                         fontWeight: FontWeight.bold,
-                        color: _isCounterBlack
-                            ? const Color.fromARGB(255, 174, 173, 173)
-                            : Colors.white,
+                        color: Colors.white,
                       ),
                     ),
                   ],
@@ -122,28 +120,28 @@ class _TasbeehCounterScreenState extends State<TasbeehCounterScreen> {
                       onPressed: () {
                         _saveCounter(); // Save count
                       },
-                      child: Text(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.teal,
+                        minimumSize: const Size(150, 50),
+                      ),
+                      child: const Text(
                         'Save Count',
                         style: TextStyle(
                           color: Colors.white,
                         ),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
-                        minimumSize: Size(150, 50),
-                      ),
                     ),
                     ElevatedButton(
-                      onPressed: _resetCounter, // Reset count to 0
-                      child: Text(
+                      onPressed: _resetCounter,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        minimumSize: const Size(150, 50),
+                      ), // Reset count to 0
+                      child: const Text(
                         'Reset',
                         style: TextStyle(
                           color: Colors.white,
                         ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        minimumSize: Size(150, 50),
                       ),
                     ),
                   ],

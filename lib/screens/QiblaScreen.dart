@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:salahtracker/utils/helper_function.dart';
-import 'dart:math' as math;
 
 import '../providers/qibla_provider.dart';
 
@@ -38,7 +37,7 @@ class QiblaScreen extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: Column(
-          //      spacing: 100,
+                //      spacing: 100,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Column(

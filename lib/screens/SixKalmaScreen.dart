@@ -65,20 +65,20 @@ class SixKalmaScreen extends StatelessWidget {
       appBar: AppBar(
         foregroundColor: Colors.white,
         backgroundColor: Colors.teal,
-        title: Text("6 Kalmas"),
+        title: const Text("6 Kalmas"),
       ),
       body: ListView.builder(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         itemCount: kalmas.length,
         itemBuilder: (context, index) {
           final kalma = kalmas[index];
           return Card(
             elevation: 5,
-            margin: EdgeInsets.symmetric(vertical: 12),
+            margin: const EdgeInsets.symmetric(vertical: 12),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
             child: Padding(
-              padding: EdgeInsets.all(20),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -91,7 +91,7 @@ class SixKalmaScreen extends StatelessWidget {
                       color: Colors.teal,
                     ),
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   // Arabic Text
                   Text(
                     kalma['arabic']!,
@@ -104,9 +104,9 @@ class SixKalmaScreen extends StatelessWidget {
                           : Colors.black87,
                     ),
                   ),
-                  SizedBox(height: 10),
-                  Divider(color: const Color.fromARGB(255, 207, 207, 207)),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
+                  const Divider(color: Color.fromARGB(255, 207, 207, 207)),
+                  const SizedBox(height: 10),
                   // English Translation
                   Text(
                     "English Translation:",
@@ -116,7 +116,7 @@ class SixKalmaScreen extends StatelessWidget {
                       color: Colors.teal.shade700,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     kalma['english']!,
                     style: TextStyle(
@@ -126,7 +126,7 @@ class SixKalmaScreen extends StatelessWidget {
                           : Colors.black87,
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   // Urdu Translation
                   Text(
                     "Urdu Translation:",
@@ -136,7 +136,7 @@ class SixKalmaScreen extends StatelessWidget {
                       color: Colors.teal.shade700,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     kalma['urdu']!,
                     style: TextStyle(
@@ -146,7 +146,7 @@ class SixKalmaScreen extends StatelessWidget {
                           : Colors.black87,
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   // Copy and Share Buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -157,19 +157,20 @@ class SixKalmaScreen extends StatelessWidget {
                               text:
                                   "${kalma['name']}\n\n${kalma['arabic']}\n\nEnglish Translation: ${kalma['english']}\n\nUrdu Translation: ${kalma['urdu']}"));
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Copied to clipboard")),
+                            const SnackBar(
+                                content: Text("Copied to clipboard")),
                           );
                         },
-                        icon: Icon(Icons.copy),
-                        label: Text("Copy"),
+                        icon: const Icon(Icons.copy),
+                        label: const Text("Copy"),
                       ),
                       ElevatedButton.icon(
                         onPressed: () {
                           Share.share(
                               "${kalma['name']}\n\n${kalma['arabic']}\n\nEnglish Translation: ${kalma['english']}\n\nUrdu Translation: ${kalma['urdu']}");
                         },
-                        icon: Icon(Icons.share),
-                        label: Text("Share"),
+                        icon: const Icon(Icons.share),
+                        label: const Text("Share"),
                       ),
                     ],
                   ),

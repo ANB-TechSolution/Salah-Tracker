@@ -604,7 +604,7 @@ class AllahNamesScreen extends StatelessWidget {
   Future<void> copyToClipboard(BuildContext context, String text) async {
     await Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      const SnackBar(
         content: Text('Copied to clipboard'),
         duration: Duration(seconds: 1),
       ),
@@ -616,7 +616,7 @@ class AllahNamesScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.white,
-        title: Text('99 Names of Allah'),
+        title: const Text('99 Names of Allah'),
         backgroundColor: Colors.teal,
       ),
       body: ListView.builder(
@@ -668,27 +668,27 @@ class AllahNamesScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   Center(
                     child: Text(
-                      '${name['translationEnglish']!}',
+                      name['translationEnglish']!,
                       style: const TextStyle(fontSize: 16),
                     ),
                   ),
                   Center(
                     child: Text(
-                      '${name['translationUrdu']!}',
+                      name['translationUrdu']!,
                       style: const TextStyle(fontSize: 16),
                     ),
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.copy, color: Colors.teal),
+                        icon: const Icon(Icons.copy, color: Colors.teal),
                         onPressed: () => copyToClipboard(context,
                             '${name['arabic']} (${name['english']}): ${name['translationEnglish']}'),
                       ),
                       IconButton(
-                        icon: Icon(Icons.share, color: Colors.teal),
+                        icon: const Icon(Icons.share, color: Colors.teal),
                         onPressed: () => Share.share(
                             '${name['arabic']} (${name['english']}): ${name['translationEnglish']}'),
                       ),

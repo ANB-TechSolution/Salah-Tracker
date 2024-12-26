@@ -25,7 +25,7 @@ class QiblaScreenProvider extends ChangeNotifier {
 
   // Low-pass filter alpha value (0 to 1)
   // Lower values mean smoother but slower updates
-  final double _alpha = 0.3;
+  final double _alpha = 0.25;
 
   QiblaScreenProvider() {
     _init();

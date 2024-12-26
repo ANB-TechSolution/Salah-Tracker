@@ -14,7 +14,7 @@ class PrayerTimingScreen extends StatelessWidget {
       create: (_) => PrayerTimingsProvider(PrayerService(), location: location),
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Prayer Times'),
+          title: const Text('Prayer Times'),
           backgroundColor: Colors.teal,
           foregroundColor: Colors.white,
           centerTitle: true,
@@ -30,13 +30,13 @@ class PrayerTimingScreen extends StatelessWidget {
         body: Consumer<PrayerTimingsProvider>(
           builder: (context, provider, child) {
             if (provider.isLoading && provider.prayerData == null) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             }
 
             return Column(
               children: [
                 // Location and mosque image section
-                Container(
+                SizedBox(
                   width: double.infinity,
                   height: MediaQuery.of(context).size.height * 0.3,
                   child: Stack(
@@ -48,42 +48,43 @@ class PrayerTimingScreen extends StatelessWidget {
                         ),
                       ),
                       Container(
-                        color: Colors.black.withOpacity(0.3),
+                        color: const Color.fromRGBO(0, 0, 0, 0.3),
                         child: Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
                                 provider.location,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
                               ),
-                              SizedBox(height: 8),
+                              const SizedBox(height: 8),
                               Text(
                                 provider.gregorianDate,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 18,
                                   color: Colors.white,
                                 ),
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                               Container(
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                   horizontal: 16,
                                   vertical: 8,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.teal.withOpacity(0.8),
+                                  color: Colors.teal
+                                      .withAlpha((255 * 0.8).round()),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Column(
                                   children: [
                                     Text(
                                       'Next Prayer: ${provider.currentPrayer}',
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,
@@ -91,7 +92,7 @@ class PrayerTimingScreen extends StatelessWidget {
                                     ),
                                     Text(
                                       provider.remainingTime,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 16,
                                         color: Colors.white,
                                       ),
@@ -110,7 +111,7 @@ class PrayerTimingScreen extends StatelessWidget {
                 // Prayer times list
                 Expanded(
                   child: ListView.builder(
-                    padding: EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
                     itemCount: 5,
                     itemBuilder: (context, index) {
                       final prayers = [
@@ -128,7 +129,7 @@ class PrayerTimingScreen extends StatelessWidget {
 
                       return Card(
                         elevation: 4,
-                        margin: EdgeInsets.only(bottom: 12),
+                        margin: const EdgeInsets.only(bottom: 12),
                         color: isCurrentPrayer
                             ? Colors.teal.shade50
                             : Colors.white,

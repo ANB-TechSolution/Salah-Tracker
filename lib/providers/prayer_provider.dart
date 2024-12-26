@@ -50,7 +50,7 @@ class PrayerTimingsProvider with ChangeNotifier {
 
   void _startTimer() {
     _timer?.cancel();
-    _timer = Timer.periodic(Duration(minutes: 1), (timer) {
+    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
       _fetchPrayerTimes();
     });
   }

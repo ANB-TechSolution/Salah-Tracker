@@ -165,7 +165,7 @@ class SalahTrackerScreen extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => SettingsScreen()),
+                                  builder: (context) => const SettingsScreen()),
                             );
                             break;
                           case 'Learn Quran':

@@ -141,7 +141,7 @@ class PrayerService {
 
     if (prayer.isBefore(now)) {
       // If prayer time has passed, calculate time until next day's prayer
-      final nextPrayer = prayer.add(Duration(days: 1));
+      final nextPrayer = prayer.add(const Duration(days: 1));
       return _formatDuration(nextPrayer.difference(now));
     }
 
