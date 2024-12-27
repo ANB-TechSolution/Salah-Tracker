@@ -9,7 +9,6 @@ import 'package:salahtracker/screens/QuranScreen.dart';
 import 'package:salahtracker/screens/SettingsScreen.dart';
 import 'package:salahtracker/screens/SixKalmaScreen.dart';
 import 'package:salahtracker/screens/TasbeehCounterScreen.dart';
-import 'package:salahtracker/screens/notification_screen.dart';
 import 'package:salahtracker/screens/onBoardingScreen.dart';
 import 'package:salahtracker/services/notifi_service.dart';
 import 'providers/main_screen_provider.dart';
@@ -193,15 +192,7 @@ class SalahTrackerScreen extends StatelessWidget {
                                   builder: (context) => const SettingsScreen()),
                             );
                             break;
-                          case 'Notification':
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const MyHomePage(
-                                        title: "Assalam U Alikum",
-                                      )),
-                            );
-                            break;
+
                           case 'Learn Quran':
                             Navigator.push(
                               context,
