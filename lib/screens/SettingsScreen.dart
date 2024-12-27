@@ -84,7 +84,7 @@ class SettingsScreen extends StatelessWidget {
                                     fontSize: 15, fontWeight: FontWeight.w700),
                               ),
                               Text(
-                                  "${mainScreenProvider.position.latitude.toStringAsFixed(6)}, ${mainScreenProvider.position.longitude.toStringAsFixed(6)}"),
+                                  "${mainScreenProvider.latitude.toStringAsFixed(6)}, ${mainScreenProvider.longitude.toStringAsFixed(6)}"),
                             ],
                           ),
                         ],

@@ -123,7 +123,8 @@ class SalahTrackerScreen extends StatelessWidget {
                         mainScreenProvider.location,
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.white70,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
                     ],
@@ -251,10 +252,8 @@ class SalahTrackerScreen extends StatelessWidget {
                                   builder: (context) => QiblaScreen(
                                         rotationOffset: 90,
                                         location: mainScreenProvider.location,
-                                        lat: mainScreenProvider
-                                            .position.latitude,
-                                        long: mainScreenProvider
-                                            .position.longitude,
+                                        lat: mainScreenProvider.latitude,
+                                        long: mainScreenProvider.longitude,
                                       )),
                             );
                             break;
