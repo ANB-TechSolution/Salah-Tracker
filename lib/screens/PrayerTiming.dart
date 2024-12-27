@@ -1,3 +1,4 @@
+// PrayerTimingScreen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/prayer_provider.dart';
@@ -18,14 +19,6 @@ class PrayerTimingScreen extends StatelessWidget {
           backgroundColor: Colors.teal,
           foregroundColor: Colors.white,
           centerTitle: true,
-          // actions: [
-          //   IconButton(
-          //     icon: Icon(Icons.refresh),
-          //     onPressed: () {
-          //       context.read<PrayerTimingsProvider>().refresh();
-          //     },
-          //   ),
-          // ],
         ),
         body: Consumer<PrayerTimingsProvider>(
           builder: (context, provider, child) {
@@ -112,10 +105,11 @@ class PrayerTimingScreen extends StatelessWidget {
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    itemCount: 5,
+                    itemCount: 6, // Increased to include Sunrise
                     itemBuilder: (context, index) {
                       final prayers = [
                         'Fajr',
+                        'Sunrise',
                         'Dhuhr',
                         'Asr',
                         'Maghrib',
@@ -135,7 +129,9 @@ class PrayerTimingScreen extends StatelessWidget {
                             : Colors.white,
                         child: ListTile(
                           leading: Icon(
-                            Icons.access_time,
+                            prayer == 'Sunrise'
+                                ? Icons.wb_sunny
+                                : Icons.access_time,
                             color: isCurrentPrayer ? Colors.teal : Colors.grey,
                           ),
                           title: Text(

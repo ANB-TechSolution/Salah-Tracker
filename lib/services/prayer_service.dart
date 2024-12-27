@@ -124,7 +124,13 @@ class PrayerService {
 
   String _getCurrentPrayer(Map<String, dynamic> timings) {
     final now = DateTime.now();
-    final prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+    final prayers = [
+      'Fajr',
+      'Dhuhr',
+      'Asr',
+      'Maghrib',
+      'Isha'
+    ]; // Keep original prayer list
 
     for (int i = prayers.length - 1; i >= 0; i--) {
       final prayerTime = _parseTime(timings[prayers[i]]);
