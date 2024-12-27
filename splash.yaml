@@ -1,13 +1,13 @@
-flutter_native_splash:
-  color: "#062B49" # Updated color for both light and dark themes
-  color_dark: "#062B49"
-  image: assets/images/splash.png
-  image_dark: assets/images/splash.png
+# flutter_native_splash:
+#   color: "#062B49" # Updated color for both light and dark themes
+#   color_dark: "#062B49"
+#   image: assets/icons/logo.png
+#   image_dark: assets/icons/logo.png
 
-  android_12:
-    color: "#062B49"
-    color_dark: "#062B49"
-    image: assets/images/splash.png
-    image_dark: assets/images/splash.png
+#   android_12:
+#     color: "#062B49"
+#     color_dark: "#062B49"
+#     image: assets/icons/logo.png
+#     image_dark: assets/icons/logo.png
 
-  web: false
+#   web: false

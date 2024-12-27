@@ -28,7 +28,7 @@ class OnboardingScreen extends StatelessWidget {
               children: [
                 const SizedBox(height: 200),
                 Image.asset(
-                  "assets/images/drawer.png",
+                  "assets/icons/logo.png",
                   width: double.maxFinite,
                 ),
                 const Text(

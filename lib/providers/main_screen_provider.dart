@@ -28,32 +28,6 @@ class MainScreenProvider with ChangeNotifier {
   }
 
   Future<void> _getLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      _location = "Location services are disabled.";
-      notifyListeners();
-      return;
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        _location = "Location permission denied.";
-        notifyListeners();
-        return;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      _location = "Location permissions are permanently denied.";
-      notifyListeners();
-      return;
-    }
-
     try {
       _position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);

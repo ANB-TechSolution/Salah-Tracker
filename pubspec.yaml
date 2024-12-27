@@ -52,6 +52,7 @@ dependencies:
   hive_flutter: ^1.1.0
   connectivity_plus: ^6.1.1
   flutter_local_notifications: ^18.0.1
+  
 
 
 dev_dependencies:
@@ -64,6 +65,14 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.2
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/custom_icon.png"
+  adaptive_icon_background: "#ffffff" # Add this
+  adaptive_icon_foreground: "assets/icons/custom_icon.png" # Add this
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
