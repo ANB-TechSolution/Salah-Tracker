@@ -9,7 +9,9 @@ import 'package:salahtracker/screens/QuranScreen.dart';
 import 'package:salahtracker/screens/SettingsScreen.dart';
 import 'package:salahtracker/screens/SixKalmaScreen.dart';
 import 'package:salahtracker/screens/TasbeehCounterScreen.dart';
+import 'package:salahtracker/screens/notification_screen.dart';
 import 'package:salahtracker/screens/onBoardingScreen.dart';
+import 'package:salahtracker/services/notifi_service.dart';
 import 'providers/main_screen_provider.dart';
 import 'providers/on_boarding_provider.dart';
 import 'providers/quran_screen_provider.dart';
@@ -19,6 +21,8 @@ import 'utils/theme/theme.dart';
 //
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  NotificationService().initNotification();
   runApp(
     MultiProvider(
       providers: [
@@ -186,6 +190,15 @@ class SalahTrackerScreen extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                   builder: (context) => const SettingsScreen()),
+                            );
+                            break;
+                          case 'Notification':
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const MyHomePage(
+                                        title: "Assalam U Alikum",
+                                      )),
                             );
                             break;
                           case 'Learn Quran':

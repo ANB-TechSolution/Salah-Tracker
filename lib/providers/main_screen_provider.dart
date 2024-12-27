@@ -18,6 +18,7 @@ class MainScreenProvider with ChangeNotifier {
     {'name': 'Tasbeeh Counter', 'image': 'assets/icons/counter.png'},
     {'name': 'Qibla Finder', 'image': 'assets/icons/compass.png'},
     {'name': 'Settings', 'image': 'assets/icons/settings.png'},
+    {'name': 'Notification', 'image': 'assets/icons/settings.png'}
   ];
 
   List<Map<String, dynamic>> get cardsData => _cardsData;

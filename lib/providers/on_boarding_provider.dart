@@ -13,6 +13,7 @@ class OnboardingProvider extends ChangeNotifier {
 
   Future<void> init() async {
     await _checkLocationStatus();
+    await _checkNotificationPermission(); // Add this
     _startLocationCheckTimer();
   }
 
@@ -29,6 +30,13 @@ class OnboardingProvider extends ChangeNotifier {
     // Automatically stop timer if conditions are met
     if (_locationPermissionGranted && _locationServicesEnabled) {
       _stopTimer();
+    }
+  }
+
+  Future<void> _checkNotificationPermission() async {
+    final status = await Permission.notification.status;
+    if (status.isDenied) {
+      await Permission.notification.request();
     }
   }
 
