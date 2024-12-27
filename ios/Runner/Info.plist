@@ -49,5 +49,26 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>We need background location access to provide accurate prayer times and Qibla direction even when the app is in background.</string>
+		<key>NSUserNotificationUsageDescription</key>
+		<string>We need to send you notifications for prayer times and reminders.</string>
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>location</string>
+			<string>processing</string>
+		</array>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>We need background location access to provide accurate prayer times and Qibla direction even when the app is in background.</string>
+
+		<key>NSUserNotificationUsageDescription</key>
+		<string>We need to send you notifications for prayer times and reminders.</string>
+
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>location</string>
+			<string>processing</string>
+		</array>
+
 	</dict>
 </plist>
